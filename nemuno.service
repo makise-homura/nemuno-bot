@@ -1,0 +1,20 @@
+[Unit]
+Description=Nemuno Telegram Bot
+After=network.target
+
+[Service]
+Type=exec
+User=nemuno
+Group=nemuno
+WorkingDirectory=/var/lib/nemuno
+ExecStart=/var/lib/nemuno/nemuno_bot.py
+RestartSec=5
+Restart=always
+TimeoutSec=5
+#StandardOutput=append:/var/lib/nemuno/stdout.log
+#StandardError=append:/var/lib/nemuno/stderr.log
+#Environment="http_proxy=http://proxy.example.org:8080"
+#Environment="https_proxy=http://proxy.example.org:8080"
+
+[Install]
+WantedBy=multi-user.target

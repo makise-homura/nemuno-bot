@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+# Token you get from BotFather
+token = '1234567890:HereGoesYourTelegramBotToken'
+
+# Chat ID of admin (their username will go to some messages, and they will be able to use /decline command)
+admin_chatid = '987654321'
+
+# Sqlite database file (in current working directory) to hold declined users, langs and timeouts.
+# You must create this database and then execute create_tables.sql to add required tables.
+# After this, create_tables.sql will no more be needed.
+dbfile = 'nemuno_bot.db'
+
+# Server definitions. Key is a standard OpenSSH private key. Server should have authorized a public part of it.
+servers = {
+    'host1': {'host': 'gw.example.org',           'port': '8144', 'user': 'gwuser',   'key': 'host1.pk'},
+    'host2': {'host': 'tunnel.example.org',       'port': '22',   'user': 'tunneler', 'key': 'host2.pk'},
+    'host3': {'host': 'host3.direct.example.org', 'port': '22',   'user': 'user',     'key': 'host3.pk'},
+}
