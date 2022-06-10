@@ -72,7 +72,7 @@ def ssh_run(server, cmds):
         try:
             stdin, stdout, stderr = client.exec_command(command['cmd'], timeout = 5.0)
             output = stdout.read().decode('utf-8')
-        except paramiko.ssh_exception.SSHException:
+        except (paramiko.ssh_exception.SSHException, socket.timeout):
             output = command['errmsg']
         outputs.append(output)
     client.close()
