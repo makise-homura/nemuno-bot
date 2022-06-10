@@ -1,0 +1,20 @@
+<?php
+
+$page_title = "Доступ к серверам Эльбрус";
+$tg_conf = "elbrus_gensokyo";
+$tg_bot = "ElbrusNemunoBot";
+$gw_host = "w205.mcst.ru";
+
+$pubkey_types = [ "ecdsa-sha2-nistp256", "ecdsa-sha2-nistp384", "ecdsa-sha2-nistp521", "ssh-ed25519", "rsa-sha2-512", "rsa-sha2-256", "ssh-rsa" ];
+
+define("RECAPTCHA_KEY", "place_your_recaptcha_key_here");
+define("TELEGRAM_TOKEN", "1234567890:place_your_telegram_bot_token_here!");
+define("TELEGRAM_CHATID", "987654321");
+
+$ports = array("Yukari" => 8144, "Mamizou" => 8153, "Sumireko" => 8161, "Raiko" => 8193);
+$labels_en = array("Yukari" => "Yukari (4 &times; Elbrus-8C, 1200 MHz, 128 GB RAM)", "Mamizou" => "Mamizou (4 &times; Elbrus-8C, 1300 MHz, 256 GB RAM)", "Sumireko" => "Sumireko (1 &times; Elbrus-8CV, 1550 MHz, 32 GB RAM)", "Raiko" => "Raiko (1 &times; Elbrus-2C+, 470 MHz, 4 GB RAM)");
+$labels_ru = array("Yukari" => "Yukari (4 &times; Эльбрус-8С, 1200 МГц, 128 ГБ RAM)", "Mamizou" => "Mamizou (4 &times; Эльбрус-8С, 1300 МГц, 256 ГБ RAM)", "Sumireko" => "Sumireko (1 &times; Эльбрус-8СВ, 1550 МГц, 32 ГБ RAM)", "Raiko" => "Raiko (1 &times; Эльбрус-2С+, 470 МГц, 4 ГБ RAM)");
+
+$default_servers = [ "Yukari" ];
+
+?>
