@@ -176,7 +176,7 @@ def get_text_messages(message):
     to = message.chat.id
     u = str(to)
     l = user_langs[u] if u in user_langs.keys() else langs[0]
-    print('Message from ' + u + ' (' + message.chat.username + '), user ' + str(message.from_user.id) + ' (' + message.from_user.username + '): ' + message.text, flush = True)
+    print('Message from ' + u + ' (' + str(message.chat.username) + '), user ' + str(message.from_user.id) + ' (' + str(message.from_user.username) + '): ' + message.text, flush = True)
     if not to in statemachine.keys():
         statemachine[to] = 'cmd'
 
