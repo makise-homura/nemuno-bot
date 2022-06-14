@@ -14,6 +14,7 @@ message_adminhelp = '''Supported commands:
 /lang ''' + '|'.join(langs) + ''': Set preferred language.
 /state &lt;user&gt;: Check if user is created on the servers.
 /decline &lt;user&gt; &lt;reason&gt;: Decline user with some reason.
+/undecline &lt;user&gt;: Remove decline reason for user.
 /info &lt;server&gt;: Check uptime and current load of server.
 /help: Get this help.'''
 
@@ -33,7 +34,8 @@ message_adminhelp_ru = '''Поддерживаемые команды:
 /start: Разрешить мне посылать сообщения. Без этого я не смогу ничего отправить.
 /lang ''' + '|'.join(langs) + ''': Установить язык.
 /state &lt;user&gt;: Проверить, создан ли пользователь на серверах (не чаще 1 запроса в 10 секунд).
-/decline &lt;user&gt; &lt;reason&gt;: Отклонить создание пользователя по какой-либо просьбе.
+/decline &lt;user&gt; &lt;reason&gt;: Отклонить создание пользователя по какой-либо причине.
+/undecline &lt;user&gt;: Убрать причину отклонения пользователя.
 /info &lt;server&gt;: Проверить аптайм и загруженность сервера (не чаще 1 запроса в 10 секунд).
 /help: Эта справка.'''
 
@@ -57,6 +59,7 @@ l10n = {
         ' is active on following online servers: ':             ' добавлен на следующие сервера: ',
         ' is active on the online server ':                     ' добавлен на сервер ',
         ' is now declined due to: ':                            ' теперь не будет зарегистрирован по причине: ',
+        ' is now undeclined.':                                  ' теперь не имеет причины отказа в регистрации.',
         'Note: Server ':                                        'Внимание: сервер ',
         ' is offline, can\'t check it.':                         ' не работает, не могу его проверить.',
         'Wrong language: ':                                     'Неподдерживаемый язык: ',

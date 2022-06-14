@@ -120,4 +120,4 @@ And then she'll see in reply for `/state` request:
 ```
 User cirno is not added because of: You're a baka and don't know how to apply for the access properly.
 ```
-So she could re-apply or ask admin to elaborate and/or add her manually.
+So she could re-apply or ask admin to elaborate and/or add her manually. And when she managed to do all the stuff correctly, you may `/undecline` her.

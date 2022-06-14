@@ -59,6 +59,14 @@ def put_db(id, data, table):
     except sqlite3.DatabaseError:
         return False
 
+def remove_db(id, table):
+    try:
+        db.execute('DELETE FROM ' + table + ' WHERE id = \'' + id + '\'')
+        db.commit()
+        return True
+    except sqlite3.DatabaseError:
+        return False
+
 def ssh_run(server, cmds):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -124,6 +132,15 @@ def decline(l, args):
         return user + _(l, ' is not an allowed username.')
     if put_db(user, reason, 'declined'):
         return _(l, 'User ') + user + _(l, ' is now declined due to: ') + reason
+    else:
+        return _(l, 'Database error. Tell ') + owner + _(l, ' about it, please.')
+
+def undecline(l, user):
+    user = user.lower()
+    if not sane(user):
+        return user + _(l, ' is not an allowed username.')
+    if remove_db(user, 'declined'):
+        return _(l, 'User ') + user + _(l, ' is now undeclined.')
     else:
         return _(l, 'Database error. Tell ') + owner + _(l, ' about it, please.')
 
@@ -220,6 +237,9 @@ def get_text_messages(message):
 
         elif cmd == '/decline' and u == admin_chatid:
             send(to, decline(l, args))
+
+        elif cmd == '/undecline' and u == admin_chatid:
+            send(to, undecline(l, args))
 
         else:
             send(to, _(l, 'Wrong command, type /help to get help on commands.'))
