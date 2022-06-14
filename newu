@@ -1,0 +1,35 @@
+#!/bin/sh
+
+c_host=w205.mcst.ru
+c_port=8193
+c_homeroot=/export/home
+
+qlang=ru
+if [ "$1" = "--lang" ]
+then
+    shift
+    qlang=$1
+    shift
+fi
+
+user=$1
+shift
+echo -en "\e[1;31m"
+[ -d $c_homeroot/$user ] && exit 1
+sudo useradd -d $c_homeroot/$user -m -U -s /bin/bash $user || exit 2
+sudo mkdir -p $c_homeroot/$user/.ssh || exit 3
+sudo chown $user:$user $c_homeroot/$user/.ssh || exit 4
+sudo chmod 700 $c_homeroot/$user/.ssh || exit 5
+echo $@ | sudo tee $c_homeroot/$user/.ssh/authorized_keys > /dev/null || exit 6
+sudo chown $user:$user $c_homeroot/$user/.ssh/authorized_keys || exit 7
+sudo chmod 600 $c_homeroot/$user/.ssh/authorized_keys || exit 8
+echo -e "\n\e[0;1m================================================================================\e[0m"
+echo -e "      Created user: [\e[1;33m$user\e[0m]"
+echo -e "\e[1m================================================================================\e[0m"
+sudo ls --color=always -la $c_homeroot/$user/.ssh/ | grep -v '^итого'
+echo -e "\e[1m================================================================================\e[36m"
+echo -e "`sudo cat $c_homeroot/$user/.ssh/authorized_keys | sed -r 's/(.{80})/\1\n/g;s/([^ ]*) ([^ ]*)(| [^ ]*)/\\\\e[1;33m\1\\\\e[0;36m \2\\\\e[1;33m\3\\\\e[0m/'`"
+echo -e "\e[1m================================================================================\e[0m"
+[ $qlang = ru ] && echo -e " Создан пользователь $user. Заходить: хост $c_host, порт $c_port."
+[ $qlang = en ] && echo -e " User $user is created. Connect to host $c_host, port $c_port."
+echo -e "\e[1m================================================================================\e[0m"
