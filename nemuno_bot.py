@@ -186,6 +186,7 @@ def get_text_messages(message):
         except ValueError:
             cmd = message.text
             args = ''
+        cmd = re.match(r'^[^@]*', cmd)[0]
 
         if cmd == '/start':
             send(to, _(l, message_start) + '\n' + _(l, 'Contact ') + owner + _(l, ' for further info.'))
