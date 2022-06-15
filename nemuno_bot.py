@@ -5,6 +5,7 @@ import telebot
 import datetime
 import paramiko
 import sqlite3
+import socket
 
 from nemuno_config import token, admin_chatid, dbfile, servers
 from nemuno_l10n import _, message_start, message_help, message_adminhelp, langs
@@ -72,7 +73,7 @@ def ssh_run(server, cmds):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         client.connect(hostname = servers[server]['host'], username = servers[server]['user'], port = servers[server]['port'], key_filename = servers[server]['key'], timeout = 5.0, banner_timeout = 5.0, auth_timeout = 5.0)
-    except paramiko.ssh_exception.SSHException:
+    except (paramiko.ssh_exception.SSHException, socket.timeout):
         client.close()
         return False
     outputs = []
