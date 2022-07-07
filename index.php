@@ -182,6 +182,7 @@ else
             <div class="text-right"><a id="lang_en" href="#" onclick="localize_en();" >ENG</a> | <a id="lang_ru" href="#" onclick="localize_ru();" >РУС</a></div>
             <hr>
             <div class="card fluid"><div id="manual" class="section double-padded text-justified"></div></div>
+            <div class="card error fluid"><div id="holidaynote" class="section text-centered"></div></div>
             <div id="error" class="card fluid hidden"><div id="errorsec" class="section text-centered"></div></div>
             <form class="card fluid success" method="post" action="#" id="form">
                 <input id="lang" name="lang" type="hidden">
@@ -295,6 +296,7 @@ else
                     "<p>После того, как запрос послан, можно проверить его статус, написав телеграм-боту <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
                     "<p>Время обработки запроса &mdash; от нескольких минут до нескольких дней.</p>" +
                     "<p>Сервис работает в режиме &laquo;как есть&raquo;. Доступность серверов 100% не гарантируется. По любым вопросам обращайтесь в телеграм <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>")
+                $("#holidaynote").text("Поскольку администратор будет в отпуске с 16 июля по 7 августа, запросы, поступившие в этот период, будут обработаны только после 7 августа.")
                 $("#label_username").text("Имя пользователя:")
                 $("#label_publickey").text("Публичный ключ:")
                 $("#label_telegram").text("ID в телеграме для сообщения о результате:")
@@ -322,6 +324,7 @@ else
                     "<p>Once request is sent, you may check its state by contacting telegram bot <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
                     "<p>The time it takes to approve a request ranges from a few minutes to several days.</p>" +
                     "<p>Service is offered as is. 100% availability is not guaranteed. For any questions, contact telegram <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>")
+                $("#holidaynote").text("Server administrator will be unavailable since July 16 till August 7, so requests submitted at this period, will be approved only after August 7.")
                 $("#label_username").text("Username:")
                 $("#label_publickey").text("Public key:")
                 $("#label_telegram").text("Telegram ID to contact:")
