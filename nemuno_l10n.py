@@ -21,7 +21,8 @@ message_adminhelp = '''Supported commands:
 message_start = '''Welcome!
 I'm Nemuno from Mount Elbrus (either 8C or 8CV peak), and I will help you perform some actions on them.
 Say /help to check what's available for you.
-Say /lang to select the language (currently supported: ''' + ', '.join(langs) + ''').'''
+Say /lang to select the language (currently supported: ''' + ', '.join(langs) + ''').
+Note: Server administrator will be unavailable since July 16 till August 7, so requests submitted at this period, will be approved only after August 7.'''
 
 message_help_ru = '''Поддерживаемые команды:
 /start: Разрешить мне посылать сообщения. Без этого я не смогу ничего отправить.
@@ -42,7 +43,8 @@ message_adminhelp_ru = '''Поддерживаемые команды:
 message_start_ru = '''Привет!
 Я Немуно с Эльбруса (какая-то из вершин 8С или 8СВ), и я смогу помочь сделать кое-что с ними.
 Мне можно сказать /help, чтобы увидеть доступные команды.
-А также можно сказать /lang, чтобы выбрать язык (имеются: ''' + ', '.join(langs) + ''').'''
+А также можно сказать /lang, чтобы выбрать язык (имеются: ''' + ', '.join(langs) + ''').
+Внимание: поскольку администратор будет в отпуске с 16 июля по 7 августа, запросы, поступившие в этот период, будут обработаны только после 7 августа.'''
 
 l10n = {
     'ru': {
