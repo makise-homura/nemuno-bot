@@ -4,6 +4,7 @@
 c_host=w205.mcst.ru
 c_port=8193
 c_homeroot=/export/home
+c_servername=Localhost
 
 # You may override these default values in /etc/newu.conf
 [ -f /etc/newu.conf ] && . /etc/newu.conf
@@ -23,6 +24,13 @@ then
     quid="-g $1 -u $1"
     qgid="-g $1"
     shift
+fi
+
+qserver=""
+if [ "$1" = "-s" ]
+then
+    shift
+    qserver=" $c_servername:"
 fi
 
 user=$1
@@ -46,6 +54,6 @@ sudo ls --color=always -la $c_homeroot/$user/.ssh/ | grep -v '^итого'
 echo -e "\e[1m================================================================================\e[36m"
 echo -e "`sudo cat $c_homeroot/$user/.ssh/authorized_keys | sed -r 's/(.{80})/\1\n/g;s/([^ ]*) ([^ ]*)(| [^ ]*)/\\\\e[1;33m\1\\\\e[0;36m \2\\\\e[1;33m\3\\\\e[0m/'`"
 echo -e "\e[1m================================================================================\e[0m"
-[ $qlang = ru ] && echo -e " Создан пользователь $user. Заходить: хост $c_host, порт $c_port."
+[ $qlang = ru ] && echo -e "$qserver Создан пользователь $user. Заходить: хост $c_host, порт $c_port."
 [ $qlang = en ] && echo -e " User $user is created. Connect to host $c_host, port $c_port."
 echo -e "\e[1m================================================================================\e[0m"

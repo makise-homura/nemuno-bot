@@ -59,13 +59,14 @@ Message will be sent even when the bot itself is not running.
 
 # User creation script
 
-Upload `newu` onto each target host, and configure `c_homeroot` (where users' home directories reside), `c_host` (gateway hostname/IP) and `c_port` (this host's gateway port) variables in `/etc/newu.conf`.
+Upload `newu` onto each target host.
+Configure `c_homeroot` (where users' home directories reside), `c_host` (gateway hostname/IP), `c_port` (this host's gateway port), and `c_servername` (server name to be displayed) variables in `/etc/newu.conf`.
 You may also rewrite these variables directly in `newu` script, but this is discouraged because it will be harder to update this script from git repository once it's updated.
 
 Now, when some user applies for access on the website, you will receive the following message to your admin chat:
 
 ```
-newu --lang ru -u 999 cirno ssh-rsa BaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKa cirno@mistylake.jp
+newu --lang ru -u 999 -s cirno ssh-rsa BaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKa cirno@mistylake.jp
 Servers: Host9 Host999
 Telegram account: @CirnoTheStrongest
 ```
@@ -74,6 +75,8 @@ Just do the following:
 1. Log in to each of the servers in second line (you must have sudo rights there);
 2. Execute command specified in first line there;
 3. Copy-paste the last message `newu` printed, and send it to the telegram user in the third line.
+
+Note: if there's more than one server in request, server name will be included in each newu output.
 
 What if user did not specify a telegram account? Then skip third part, and use the bot (see below).
 
