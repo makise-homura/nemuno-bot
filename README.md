@@ -9,6 +9,7 @@
 * Create a bot through @BotFather, get its token and @-name.
 * Create a chat for user support, get its @-name.
 * Acquire a domain and register ReCaptcha for it, get its key.
+* Use website hosting with PHP (and optionally MySQL, see below) enabled.
 * Find out your own telegram chat id, you can do it by sending something to @ShowJsonBot and check `message.chat.id` field. Bot will allow admin commands only from it.
 
 # PHP Page
@@ -33,18 +34,38 @@ Rename `config.php.template` to `config.php` and configure it as follows:
 
 Currently only `ru` and `en` languages are supported.
 
-Then upload this file along with `index.php` to the server (and make sure `index.php` is the default directory index). Now, for any successful request you will get a message from bot (see below).
+You may want created users to have the same user ID and user group ID on all the servers (and UID equal to GID for simplicity).
+If so, MySQL should be available to PHP webpage, mysqli module should be enabled for PHP, and you have to create MySQL database on the web server.
+
+In this case, you need to additionally configure this (otherwise, leave these fields blank):
+
+* `$server_db_host`: website MySQL hostname
+* `$server_db_user`: website MySQL user name
+* `$server_db_password`: website MySQL user password
+* `$server_db_name`: website MySQL database name
+
+Then, create a MySQL database on the web server, and create table `PARAMS` in it, with two columns: `NAME` and `VALUE` of type `VARCHAR(255)`.
+Insert a line where `NAME` is `LASTUID`, and `VALUE` is user id from which you wish to start creating users (it should be greater than any existing uid and gid in the system on every server).
+
+Example SQL code to do this:
+```
+CREATE TABLE `PARAMS` ( `NAME` VARCHAR(255) NOT NULL , `VALUE` VARCHAR(255) NOT NULL ) ENGINE = MyISAM;
+INSERT INTO `PARAMS` (`NAME`, `VALUE`) VALUES ('LASTUID', '5290');
+```
+
+After you've done all this, upload `config.php` and `index.php` to the server (and make sure `index.php` is the default directory index). Now, for any successful request you will get a message from the bot (see below).
 
 Message will be sent even when the bot itself is not running.
 
 # User creation script
 
-Upload `newu` onto each target host, and configure `c_homeroot` (where users' home directories reside), `c_host` (gateway hostname/IP) and `c_port` (this host's gateway port) variables.
+Upload `newu` onto each target host, and configure `c_homeroot` (where users' home directories reside), `c_host` (gateway hostname/IP) and `c_port` (this host's gateway port) variables in `/etc/newu.conf`.
+You may also rewrite these variables directly in `newu` script, but this is discouraged because it will be harder to update this script from git repository once it's updated.
 
-Now, when some user applies for acces on the website, you will receive the following message to your admin chat:
+Now, when some user applies for access on the website, you will receive the following message to your admin chat:
 
 ```
-newu --lang ru cirno ssh-rsa BaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKa cirno@mistylake.jp
+newu --lang ru -u 999 cirno ssh-rsa BaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKaBaKa cirno@mistylake.jp
 Servers: Host9 Host999
 Telegram account: @CirnoTheStrongest
 ```
