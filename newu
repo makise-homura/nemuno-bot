@@ -1,8 +1,12 @@
 #!/bin/sh
 
+# Default values
 c_host=w205.mcst.ru
 c_port=8193
 c_homeroot=/export/home
+
+# You may override these default values in /etc/newu.conf
+[ -f /etc/newu.conf ] && . /etc/newu.conf
 
 qlang=ru
 if [ "$1" = "--lang" ]
