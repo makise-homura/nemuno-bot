@@ -10,28 +10,30 @@ c_servername=Localhost
 [ -f /etc/newu.conf ] && . /etc/newu.conf
 
 qlang=ru
-if [ "$1" = "--lang" ]
-then
-    shift
-    qlang=$1
-    shift
-fi
-
 quid="-U"
-if [ "$1" = "-u" ]
-then
-    shift
-    quid="-g $1 -u $1"
-    qgid="-g $1"
-    shift
-fi
-
 qserver=""
-if [ "$1" = "-s" ]
-then
-    shift
-    qserver=" $c_servername:"
-fi
+
+while [ "`echo $1 | head -c1`" = "-" ]
+do
+    if [ "$1" = "--lang" ]
+    then
+        shift
+        qlang=$1
+        shift
+    elif [ "$1" = "-u" ]
+    then
+        shift
+        quid="-g $1 -u $1"
+        qgid="-g $1"
+        shift
+    elif [ "$1" = "-s" ]
+    then
+        shift
+        qserver=" $c_servername:"
+    else
+        break
+    fi
+done
 
 user=$1
 shift
