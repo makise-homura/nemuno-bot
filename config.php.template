@@ -17,4 +17,9 @@ $labels_ru = array("Yukari" => "Yukari (4 &times; Эльбрус-8С, 1200 МГ�
 
 $default_servers = [ "Yukari" ];
 
+$server_db_host = "";
+$server_db_user = "";
+$server_db_password = "";
+$server_db_name = "";
+
 ?>

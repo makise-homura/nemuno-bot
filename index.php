@@ -82,12 +82,24 @@ if(isset($_POST["lang"]))
     }
     else
     {
+        $lastuid = 0;
+
+        if ($server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
+        {
+            $mysqli = mysqli_connect($server_db_host, $server_db_user, $server_db_password, $server_db_name);
+            if ($mysqli != false)
+            {
+                $lastuid = mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';"))["VALUE"];
+                mysqli_query($mysqli, "UPDATE `PARAMS` SET `VALUE` = '" . ($lastuid + 1) . "' WHERE `NAME` = 'LASTUID';");
+            }
+        }
+
         $servers = [];
         foreach (array_keys($ports) as $server)
         {
             if(isset($_POST["server_" . strtolower($server) ])) $servers[] = $server;
         }
-        $message = "newu --lang " . $_POST["lang"] . " " . $_POST["username"] . " " . $_POST["publickey"] . "\nServers: " . implode(", ", $servers) . "\nTelegram account: " . $_POST["telegram"];
+        $message = "newu". ($lastuid == 0 ? "" : " -u " . $lastuid) . " --lang " . $_POST["lang"] . " " . $_POST["username"] . " " . $_POST["publickey"] . "\nServers: " . implode(", ", $servers) . "\nTelegram account: " . $_POST["telegram"];
         $ch = curl_init("https://api.telegram.org/bot" . TELEGRAM_TOKEN . "/sendMessage?chat_id=" . TELEGRAM_CHATID . "&text=" . urlencode($message));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
