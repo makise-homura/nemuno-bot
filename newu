@@ -57,5 +57,5 @@ echo -e "\e[1m==================================================================
 echo -e "`sudo cat $c_homeroot/$user/.ssh/authorized_keys | sed -r 's/(.{80})/\1\n/g;s/([^ ]*) ([^ ]*)(| [^ ]*)/\\\\e[1;33m\1\\\\e[0;36m \2\\\\e[1;33m\3\\\\e[0m/'`"
 echo -e "\e[1m================================================================================\e[0m"
 [ $qlang = ru ] && echo -e "$qserver Создан пользователь $user. Заходить: хост $c_host, порт $c_port."
-[ $qlang = en ] && echo -e " User $user is created. Connect to host $c_host, port $c_port."
+[ $qlang = en ] && echo -e "$qserver User $user is created. Connect to host $c_host, port $c_port."
 echo -e "\e[1m================================================================================\e[0m"
