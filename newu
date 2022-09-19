@@ -20,7 +20,7 @@ do
         url="https://raw.githubusercontent.com/makise-homura/nemuno-bot/master/newu"
         dst="`readlink -f $0`"
         echo "Updating: $url -> $dst"
-        sudo wget "$url" -O "$dst"
+        sudo wget --no-cache "$url" -O "$dst"
         exit 0
     elif [ "$1" = "--lang" ]
     then
