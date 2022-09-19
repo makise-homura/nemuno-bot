@@ -59,7 +59,7 @@ Message will be sent even when the bot itself is not running.
 
 # User creation script
 
-Upload `newu` onto each target host.
+Upload `newu` onto each target host. Once it is uploaded, it might be updated by running `newu -U`.
 Configure `c_homeroot` (where users' home directories reside), `c_host` (gateway hostname/IP), `c_port` (this host's gateway port), and `c_servername` (server name to be displayed) variables in `/etc/newu.conf`.
 You may also rewrite these variables directly in `newu` script, but this is discouraged because it will be harder to update this script from git repository once it's updated.
 

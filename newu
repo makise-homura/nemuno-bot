@@ -15,7 +15,14 @@ qserver=""
 
 while [ "`echo $1 | head -c1`" = "-" ]
 do
-    if [ "$1" = "--lang" ]
+    if [ "$1" = "-U" ]
+    then
+        url="https://raw.githubusercontent.com/makise-homura/nemuno-bot/master/newu"
+        dst="`readlink -f $0`"
+        echo "Updating: $url -> $dst"
+        sudo wget "$url" -O "$dst"
+        exit 0
+    elif [ "$1" = "--lang" ]
     then
         shift
         qlang=$1
