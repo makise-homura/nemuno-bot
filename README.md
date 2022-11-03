@@ -8,7 +8,7 @@
 
 * Create a bot through @BotFather, get its token and @-name.
 * Create a chat for user support, get its @-name.
-* Acquire a domain and register ReCaptcha for it, get its keys (site and secret).
+* Acquire a domain and register ReCaptcha v2 (not v3!) for it, get its keys (site and secret).
 * Use website hosting with PHP (and optionally MySQL, see below) enabled.
 * Find out your own telegram chat id, you can do it by sending something to @ShowJsonBot and check `message.chat.id` field. Bot will allow admin commands only from it.
 
@@ -24,8 +24,8 @@ Rename `config.php.template` to `config.php` and configure it as follows:
 * `$tg_bot`: @-name of bot (without `@`)
 * `$gw_host`: gateway hostname/IP address
 * `$pubkey_types`: types of pubkeys allowed on server
-* `RECAPTCHA_SECRET_KEY`: ReCAPTCHA secret key
-* `RECAPTCHA_SITE_KEY`: ReCAPTCHA site key
+* `RECAPTCHA_SECRET_KEY`: ReCAPTCHA v2 secret key
+* `RECAPTCHA_SITE_KEY`: ReCAPTCHA v2 site key
 * `TELEGRAM_TOKEN`: bot token
 * `TELEGRAM_CHATID`: admin chat id
 * `$ports`: dictionary, where server names are keys, and corresponding port numbers on gateway are values
