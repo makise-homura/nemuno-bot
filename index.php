@@ -68,7 +68,7 @@ if(isset($_POST["lang"]))
     $error = true;
     if (!empty($_POST["g-recaptcha-response"]))
     {
-        $out = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=" . RECAPTCHA_KEY . "&response=" . $_POST["g-recaptcha-response"]);
+        $out = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=" . RECAPTCHA_SECRET_KEY . "&response=" . $_POST["g-recaptcha-response"]);
         $out = json_decode($out);
         if ($out->success == true)
         {
@@ -196,7 +196,7 @@ else
 ' . implode("\n", array_map(function($i) use ($default_servers) { return (gen_checkboxes($i, $default_servers)); }, array_keys($ports))) . '
                 </fieldset>    
                 <div class="text-centered">
-                    <div class="g-recaptcha aligned-block" data-sitekey="6LfnazwgAAAAAEQnS5OlD7ZRria3E9QRn1LHiX9F"></div>
+                    <div class="g-recaptcha aligned-block" data-sitekey="' . RECAPTCHA_SITE_KEY . '"></div>
                 </div>
                 <button id="submitreq" class="primary" type="submit"></button>
             </form>

@@ -7,7 +7,8 @@ $gw_host = "w205.mcst.ru";
 
 $pubkey_types = [ "ecdsa-sha2-nistp256", "ecdsa-sha2-nistp384", "ecdsa-sha2-nistp521", "ssh-ed25519", "rsa-sha2-512", "rsa-sha2-256", "ssh-rsa" ];
 
-define("RECAPTCHA_KEY", "place_your_recaptcha_key_here");
+define("RECAPTCHA_SECRET_KEY", "place_your_recaptcha_secret_key_here");
+define("RECAPTCHA_SITE_KEY", "place_your_recaptcha_site_key_here");
 define("TELEGRAM_TOKEN", "1234567890:place_your_telegram_bot_token_here!");
 define("TELEGRAM_CHATID", "987654321");
 
