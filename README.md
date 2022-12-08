@@ -45,14 +45,7 @@ In this case, you need to additionally configure this (otherwise, leave these fi
 * `$server_db_password`: website MySQL user password
 * `$server_db_name`: website MySQL database name
 
-Then, create a MySQL database on the web server, and create table `PARAMS` in it, with two columns: `NAME` and `VALUE` of type `VARCHAR(255)`.
-Insert a line where `NAME` is `LASTUID`, and `VALUE` is user id from which you wish to start creating users (it should be greater than any existing uid and gid in the system on every server).
-
-Example SQL code to do this:
-```
-CREATE TABLE `PARAMS` ( `NAME` VARCHAR(255) NOT NULL , `VALUE` VARCHAR(255) NOT NULL ) ENGINE = MyISAM;
-INSERT INTO `PARAMS` (`NAME`, `VALUE`) VALUES ('LASTUID', '5290');
-```
+Then, create a MySQL database on the web server, edit `create_php_db.sql` to change `12345` to user id from which you wish to start creating users (it should be greater than any existing uid and gid in the system on every server), then execute this SQL over the database.
 
 After you've done all this, upload `config.php` and `index.php` to the server (and make sure `index.php` is the default directory index). Now, for any successful request you will get a message from the bot (see below).
 
@@ -85,7 +78,7 @@ What if user did not specify a telegram account? Then skip third part, and use t
 
 You will receive messages from the website through the bot even without it running; but if you want users to have some additional info, and you to have some additional control, then let the bot run.
 
-First, create a `sqlite3` (not `sqlite`!) database, e.g. `nemuno.db`, and execute `create_db.sql` over it.
+First, create a `sqlite3` (not `sqlite`!) database, e.g. `nemuno.db`, and execute `create_bot_db.sql` over it.
 
 Then, from the host where you will run the bot, make sure you can login (e.g. no key mismatch, unknown host warning, etc.) to every target host using public key authentication.
 The way you connect may differ from how external users connect to the same servers.
