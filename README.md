@@ -96,7 +96,15 @@ Then, rename `nemuno_config.py.template` to `nemuno_config.py` and configure it 
 * `token`: bot token
 * `admin_chatid`: admin chat id
 * `dbfile`: database file you just created
-* `servers`: dictionary, where where server names are keys, and a dictionary is a value; in every subsequent dictionary, keys are `host`, `port`, `user`, and `key`, and values are corresponding bot-side parameters.
+* `servers`: dictionary, where where server names are keys, and a dictionary is a value described below.
+
+In `servers`, every subsequent dictionary should consist of:
+
+* `host` (mandatory): SSH host for corresponding server
+* `port` (mandatory): SSH port number to connect to
+* `user` (mandatory): username on server
+* `key` (mandatory): SSH private key filename
+* `disabled_algorithms` (optional): value of Paramiko `disabled_algorithms` parameter, e.g. `dict(pubkeys=["rsa-sha2-512", "rsa-sha2-256"])`
 
 Currently only `ru` and `en` languages are supported.
 If you want to localize bot to any other language too, edit `nemuno_l10n.py`: add language code to `langs` list, and then another entry to `l10n` dictionary, where key is your language code, and value is translation dictionary.

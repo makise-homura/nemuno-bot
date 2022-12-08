@@ -72,7 +72,7 @@ def ssh_run(server, cmds):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        client.connect(hostname = servers[server]['host'], username = servers[server]['user'], port = servers[server]['port'], key_filename = servers[server]['key'], timeout = 5.0, banner_timeout = 5.0, auth_timeout = 5.0)
+        client.connect(hostname = servers[server]['host'], username = servers[server]['user'], port = servers[server]['port'], key_filename = servers[server]['key'], disabled_algorithms = servers[server]['disabled_algorithms'] if('disabled_algorithms' in servers[server].keys()) else dict(), timeout = 5.0, banner_timeout = 5.0, auth_timeout = 5.0)
     except (paramiko.ssh_exception.SSHException, socket.timeout):
         client.close()
         return False

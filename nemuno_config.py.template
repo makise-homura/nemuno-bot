@@ -14,6 +14,6 @@ dbfile = 'nemuno_bot.db'
 # Server definitions. Key is a standard OpenSSH private key. Server should have authorized a public part of it.
 servers = {
     'host1': {'host': 'gw.example.org',           'port': '8144', 'user': 'gwuser',   'key': 'host1.pk'},
-    'host2': {'host': 'tunnel.example.org',       'port': '22',   'user': 'tunneler', 'key': 'host2.pk'},
+    'host2': {'host': 'tunnel.example.org',       'port': '22',   'user': 'tunneler', 'key': 'host2.pk', 'disabled_algorithms': dict(pubkeys=["rsa-sha2-512", "rsa-sha2-256"])},
     'host3': {'host': 'host3.direct.example.org', 'port': '22',   'user': 'user',     'key': 'host3.pk'},
 }
