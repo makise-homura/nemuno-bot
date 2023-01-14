@@ -256,7 +256,7 @@ else
             {
                 $("#error").addClass("hidden");
 
-                if(!($("#username").prop("value").match("^[a-z][a-z0-9_]{2,31}$")))
+                if(!($("#username").prop("value").match("^[a-z][a-z0-9_]{2,15}$")))
                 {
                     return errmsg("#errmsg_username");
                 }
@@ -291,20 +291,22 @@ else
                     "(3-32 латинских букв в нижнем регистре, цифр, знаков подчёркивания, первый символ - буква) и <a href=\"https://losst.ru/avtorizatsiya-po-klyuchu-ssh\">сгенерировать SSH-ключи</a>, " +
                     "чтобы потом по ним авторизовываться (если у вас уже есть существующая ключевая пара, то можно использовать её), после чего указать имя пользователя " +
                     "в форме ниже, вставить <strong>публичный</strong> ключ (в формате OpenSSH .pub, т.е. одной строчкой) в соответствующее поле (также можно перетащить туда файл с ним), выбрать сервера, " +
-                    "к которым запрашивается доступ, нажать галочку рекапчи, опционально ввести ID в телеграме, на который будет отправлено оповещение о создании аккаунта и отправить запрос.</p>" +
+                    "к которым запрашивается доступ, нажать галочку рекапчи, опционально ввести имя аккаунта в телеграме, на который будет отправлено оповещение о создании аккаунта и отправить запрос.</p>" +
                     "<p>После того, как запрос послан, можно проверить его статус, написав телеграм-боту <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
                     "<p>Время обработки запроса &mdash; от нескольких минут до нескольких дней.</p>" +
-                    "<p>Сервис работает в режиме &laquo;как есть&raquo;. Доступность серверов 100% не гарантируется. По любым вопросам обращайтесь в телеграм <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>")
+                    "<p>Сервис работает в режиме &laquo;как есть&raquo;. Доступность серверов 100% не гарантируется. По любым вопросам обращайтесь в телеграм <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>" +
+                    "<p>Если при подключении возникает ошибка \"no mutual signature algorithm\", попробуйте добавить \"PubkeyAcceptedKeyTypes +ssh-rsa\" в конфиг клиента (<a href=\"https://www.reddit.com/r/linuxquestions/comments/qgmnnh/comment/hi785p9/\">см. здесь</a>).</p>" +
+                    "<p>Если PuTTY не подключается и выдаёт ошибку типа \"Couldn\'t agree on host key algorithm\", необходимо <a href=\"https://sysadmins.online/threads/17881/\">его обновить</a>.</p>")
                 $("#label_username").text("Имя пользователя:")
                 $("#label_publickey").text("Публичный ключ:")
-                $("#label_telegram").text("ID в телеграме для сообщения о результате:")
+                $("#label_telegram").text("Аккаунт в телеграме для сообщения о результате (не ID и не телефон, т.е. @user, а не 1234567890 или +79012345678):")
                 $("#username").prop("title", "Разрешены латинские строчные буквы; вторым и далее символом также цифры и знак подчёркивания")
                 $("#publickey").prop("title", "Поддерживается перетаскивание .pub-файла. Поддерживаются ключи ' . implode(", ", $pubkey_types) . '")
                 $("#submitreq").text("Отправить запрос");
                 $("#errmsg_recaptcha").html("Отметьте галочку &laquo;Я не робот&raquo;");
                 $("#errmsg_noservers").text("Выберите хотя бы один сервер");
                 $("#errmsg_filesize").text("Открытый ключ должен быть не более 16 кБ размером");
-                $("#errmsg_username").text("Имя пользователя должно быть от 3 до 32 символов, состоять из латинских букв, цифр и знаков подчёркивания и начинаться с буквы");
+                $("#errmsg_username").text("Имя пользователя должно быть от 3 до 16 символов, состоять из латинских букв, цифр и знаков подчёркивания и начинаться с буквы");
                 $("#errmsg_publickey").text("Открытый ключ должен быть в формате OpenSSH *.pub: сначала тип ключа, потом строка в Base64, потом опционально комментарий");
                 $("#errmsg_pkeytype").text("Открытый ключ должен быть одного из следующих типов: ' . implode(", ", $pubkey_types) . '");
                 $("#label_servers").text("Сервера, на которые запрашивается доступ:");
@@ -318,20 +320,22 @@ else
                     "(3 to 32 latin lowercase letters, numbers, underscores, beginning with a letter), and <a href=\"https://www.ssh.com/academy/ssh/key\">generate SSH key pair</a>, " +
                     "to authenticate on these servers (if you already have a key pair, you could probably use it), then you should specify your user name " +
                     "in the form below, put yout <strong>public</strong> key (OpenSSH .pub format, i.e. a single line) in the corresponding field (or drag and drop .pub file there), choose servers you want " +
-                    "to have access to, perform ReCAPTCHA challenge, optionally you can specify your Telegram ID to contact you and send connection details to you, and submit the request.</p>" +
+                    "to have access to, perform ReCAPTCHA challenge, optionally you can specify your Telegram username to contact you and send connection details to you, and submit the request.</p>" +
                     "<p>Once request is sent, you may check its state by contacting telegram bot <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
                     "<p>The time it takes to approve a request ranges from a few minutes to several days.</p>" +
-                    "<p>Service is offered as is. 100% availability is not guaranteed. For any questions, contact telegram <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>")
+                    "<p>Service is offered as is. 100% availability is not guaranteed. For any questions, contact telegram <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>" +
+                    "<p>Note: if you have a connection error like \"no mutual signature algorithm\" try adding \"PubkeyAcceptedKeyTypes +ssh-rsa\" in client config. <a href=\"https://www.reddit.com/r/linuxquestions/comments/qgmnnh/comment/hi785p9/\">More info here</a>.</p>" +
+                    "<p>If you have PuTTY, and get an error like \"Couldn\'t agree on host key algorithm\", just <a href=\"https://sysadmins.online/threads/17881/\">update your client</a>.</p>")
                 $("#label_username").text("Username:")
                 $("#label_publickey").text("Public key:")
-                $("#label_telegram").text("Telegram ID to contact:")
+                $("#label_telegram").text("Telegram username to contact (not ID or phone, e.g. @user, not 1234567890 or +79012345678):")
                 $("#username").prop("title", "Lowercase latin letters, numbers, underscore are allowed (fist character must be a letter)")
                 $("#publickey").prop("title", "You may either paste key here or drag and drop .pub file. Supported key types: ' . implode(", ", $pubkey_types) . '")
                 $("#submitreq").text("Send a request");
                 $("#errmsg_recaptcha").html("Perform ReCAPTCHA check");
                 $("#errmsg_noservers").text("Select at least one server");
                 $("#errmsg_filesize").text("Public key size must be less than 16 kB");
-                $("#errmsg_username").text("Username should be 3 to 32 characters, consisting of latin letters, numbers and underscores, starting with a letter");
+                $("#errmsg_username").text("Username should be 3 to 16 characters, consisting of latin letters, numbers and underscores, starting with a letter");
                 $("#errmsg_publickey").text("Public key should be in OpenSSH *.pub format: key type, then Base64 key value, then optionally a comment");
                 $("#errmsg_pkeytype").text("Public key should be of one of the folloing types: ' . implode(", ", $pubkey_types) . '");
                 $("#label_servers").text("Servers you want access to:");
