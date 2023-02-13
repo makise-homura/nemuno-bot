@@ -194,7 +194,7 @@ else
                 <fieldset id="servers">
                     <legend id="label_servers"></legend>
 ' . implode("\n", array_map(function($i) use ($default_servers) { return (gen_checkboxes($i, $default_servers)); }, array_keys($ports))) . '
-                </fieldset>    
+                </fieldset>
                 <div class="text-centered">
                     <div class="g-recaptcha aligned-block" data-sitekey="' . RECAPTCHA_SITE_KEY . '"></div>
                 </div>
@@ -216,19 +216,19 @@ else
 
             $("html").on("dragover", function(event)
             {
-                event.preventDefault();  
+                event.preventDefault();
                 event.stopPropagation();
             });
 
             $("html").on("dragleave", function(event)
             {
-                event.preventDefault();  
+                event.preventDefault();
                 event.stopPropagation();
             });
 
             $("html").on("drop", function(event)
             {
-                event.preventDefault();  
+                event.preventDefault();
                 event.stopPropagation();
             });
 
@@ -299,7 +299,8 @@ else
                     "<p>Если PuTTY не подключается и выдаёт ошибку типа \"Couldn\'t agree on host key algorithm\", необходимо <a href=\"https://sysadmins.online/threads/17881/\">его обновить</a>.</p>")
                 $("#label_username").text("Имя пользователя:")
                 $("#label_publickey").text("Публичный ключ:")
-                $("#label_telegram").text("Аккаунт в телеграме для сообщения о результате (не ID и не телефон, т.е. @user, а не 1234567890 или +79012345678):")
+                $("#label_telegram").text("Аккаунт в телеграме (необязательно) для сообщения о результате (не ID и не телефон, т.е. @user, а не 1234567890 или +79012345678):")
+                $("#telegram").prop("title", "Внимание: вы не сможете получить оповещение о готовности аккаунта, если не укажете здесь контакт для связи")
                 $("#username").prop("title", "Разрешены латинские строчные буквы; вторым и далее символом также цифры и знак подчёркивания")
                 $("#publickey").prop("title", "Поддерживается перетаскивание .pub-файла. Поддерживаются ключи ' . implode(", ", $pubkey_types) . '")
                 $("#submitreq").text("Отправить запрос");
@@ -328,7 +329,8 @@ else
                     "<p>If you have PuTTY, and get an error like \"Couldn\'t agree on host key algorithm\", just <a href=\"https://sysadmins.online/threads/17881/\">update your client</a>.</p>")
                 $("#label_username").text("Username:")
                 $("#label_publickey").text("Public key:")
-                $("#label_telegram").text("Telegram username to contact (not ID or phone, e.g. @user, not 1234567890 or +79012345678):")
+                $("#label_telegram").text("Telegram username (optional) to contact (not ID or phone, e.g. @user, not 1234567890 or +79012345678):")
+                $("#telegram").prop("title", "Note: you won\'t be able to receive a confirmation, if you don\'t specify a contact here")
                 $("#username").prop("title", "Lowercase latin letters, numbers, underscore are allowed (fist character must be a letter)")
                 $("#publickey").prop("title", "You may either paste key here or drag and drop .pub file. Supported key types: ' . implode(", ", $pubkey_types) . '")
                 $("#submitreq").text("Send a request");
