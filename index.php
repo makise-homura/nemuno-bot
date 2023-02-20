@@ -40,7 +40,42 @@ $inline_css = '<style type="text/css">
 }
 </style>';
 
-if(isset($_POST["lang"]))
+if(isset($_GET["chat_id"]))
+{
+        $chat_id = preg_replace("/^@/u", "", $_GET["chat_id"]);
+        $ch = curl_init("https://t.me/" . urlencode($chat_id));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        $result = curl_exec($ch);
+        if(curl_errno($ch))
+        {
+            http_response_code(503);
+        }
+        elseif(empty($result))
+        {
+            header('Content-type: text/plain');
+            print('incorrect');
+        }
+        else
+        {
+            $dom = new DomDocument();
+            libxml_use_internal_errors(true);
+            $dom->loadHTML($result);
+            $finder = new DomXPath($dom);
+            $attr = $finder->query("//*[contains(@class, 'tgme_page_extra')]");
+            header('Content-type: text/plain');
+            if($attr != false && $attr->count() > 0)
+            {
+                print('exist');
+            }
+            else
+            {
+                print('missing');
+            }
+        }
+        curl_close($ch);
+}
+elseif(isset($_POST["lang"]))
 {
     if ($_POST["lang"] == "ru")
     {
@@ -99,7 +134,9 @@ if(isset($_POST["lang"]))
         {
             if(isset($_POST["server_" . strtolower($server) ])) $servers[] = $server;
         }
-        $message = "newu". ($lastuid == 0 ? "" : " -u " . $lastuid) . " --lang " . $_POST["lang"] . (count($servers) < 2 ? "" : " -s") . " " . $_POST["username"] . " " . $_POST["publickey"] . "\nServers: " . implode(", ", $servers) . "\nTelegram account: " . $_POST["telegram"];
+        $tguser = $_POST["telegram"];
+        if($tguser[0] != "@") $tguser = "@" . $tguser;
+        $message = "newu". ($lastuid == 0 ? "" : " -u " . $lastuid) . " --lang " . $_POST["lang"] . (count($servers) < 2 ? "" : " -s") . " " . $_POST["username"] . " " . $_POST["publickey"] . "\nServers: " . implode(", ", $servers) . "\nTelegram account: " . $tguser;
         $ch = curl_init("https://api.telegram.org/bot" . TELEGRAM_TOKEN . "/sendMessage?chat_id=" . TELEGRAM_CHATID . "&text=" . urlencode($message));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
@@ -191,6 +228,7 @@ else
                 <textarea id="publickey" name="publickey" placeholder="ssh-rsa AAAAB3N...2345678== username@hostname"></textarea>
                 <label id="label_telegram" for="telegram"></label>
                 <input id="telegram" name="telegram" type="text" placeholder="@TelegramUser">
+                <div id="tgerror" class="card fluid hidden"><div id="tgerrorsec" class="section text-centered"></div></div>
                 <fieldset id="servers">
                     <legend id="label_servers"></legend>
 ' . implode("\n", array_map(function($i) use ($default_servers) { return (gen_checkboxes($i, $default_servers)); }, array_keys($ports))) . '
@@ -200,6 +238,8 @@ else
                 </div>
                 <button id="submitreq" class="primary" type="submit"></button>
             </form>
+            <div class="hidden" id="errmsg_telegram"></div>
+            <div class="hidden" id="errmsg_tg_fail"></div>
             <div class="hidden" id="errmsg_recaptcha"></div>
             <div class="hidden" id="errmsg_username"></div>
             <div class="hidden" id="errmsg_publickey"></div>
@@ -250,6 +290,40 @@ else
                 var reader = new FileReader();
                 reader.onload = function(event) { $("#publickey").val(event.target.result); };
                 reader.readAsText(event.originalEvent.dataTransfer.files[0], "UTF-8");
+            });
+
+            $("#telegram").blur(function()
+            {
+                if($("#telegram").val() == "")
+                {
+                    $("#tgerror").addClass("hidden");
+                    return;
+                }
+                $.ajax(
+                {
+                    url: document.location.href + "?chat_id=" + $("#telegram").val(),
+                    timeout: 5000,
+                    type: "GET"
+                }).done((data) =>
+                {
+                    if(data == "exist")
+                    {
+                        $("#tgerror").addClass("hidden");
+                    }
+                    else
+                    {
+                        $("#tgerrorsec").text($("#errmsg_telegram").text());
+                        $("#tgerror").removeClass("warning");
+                        $("#tgerror").addClass("error");
+                        $("#tgerror").removeClass("hidden");
+                    }
+                }).fail(() =>
+                {
+                    $("#tgerrorsec").text($("#errmsg_tg_fail").text());
+                    $("#tgerror").removeClass("error");
+                    $("#tgerror").addClass("warning");
+                    $("#tgerror").removeClass("hidden");
+                });
             });
 
             $("#form").submit(function()
@@ -308,6 +382,8 @@ else
                 $("#errmsg_noservers").text("Выберите хотя бы один сервер");
                 $("#errmsg_filesize").text("Открытый ключ должен быть не более 16 кБ размером");
                 $("#errmsg_username").text("Имя пользователя должно быть от 3 до 16 символов, состоять из латинских букв, цифр и знаков подчёркивания и начинаться с буквы");
+                $("#errmsg_telegram").text("Такой пользователь Telegram не обнаружен. Если вы отправите форму с таким именем пользователя, вероятно, вы не получите подтверждения о создании аккаунта.");
+                $("#errmsg_tg_fail").text("Невозможно проверить корректность аккаунта Telegram. Если такой аккаунт не существует, то вероятно, вы не получите подтверждения о создании аккаунта.");
                 $("#errmsg_publickey").text("Открытый ключ должен быть в формате OpenSSH *.pub: сначала тип ключа, потом строка в Base64, потом опционально комментарий");
                 $("#errmsg_pkeytype").text("Открытый ключ должен быть одного из следующих типов: ' . implode(", ", $pubkey_types) . '");
                 $("#label_servers").text("Сервера, на которые запрашивается доступ:");
@@ -338,6 +414,8 @@ else
                 $("#errmsg_noservers").text("Select at least one server");
                 $("#errmsg_filesize").text("Public key size must be less than 16 kB");
                 $("#errmsg_username").text("Username should be 3 to 16 characters, consisting of latin letters, numbers and underscores, starting with a letter");
+                $("#errmsg_telegram").text("Such Telegram user does not exist. If you sumbit the form with that field filled like that, you highly possibly won\'t receive a confirmation that your account is created.");
+                $("#errmsg_tg_fail").text("Can\'t check if Telegram user exists. If it does not exist, you highly possibly won\'t receive a confirmation that your account is created.");
                 $("#errmsg_publickey").text("Public key should be in OpenSSH *.pub format: key type, then Base64 key value, then optionally a comment");
                 $("#errmsg_pkeytype").text("Public key should be of one of the folloing types: ' . implode(", ", $pubkey_types) . '");
                 $("#label_servers").text("Servers you want access to:");
