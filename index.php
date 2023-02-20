@@ -174,7 +174,7 @@ elseif(isset($_POST["lang"]))
 <html>
     <head>
         <title>' . $page_title . '</title>
-        <link rel="stylesheet" href="https://gitcdn.link/cdn/Chalarangelo/mini.css/e849238d198c032c9d3fa84ccadf59ea7f0ad06c/dist/mini-default.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css" />
 ' . $inline_css . '
     </head>
     <body>
@@ -211,7 +211,7 @@ else
         <title>' . $page_title . '</title>
         <script src="https://www.google.com/recaptcha/api.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <link rel="stylesheet" href="https://gitcdn.link/cdn/Chalarangelo/mini.css/e849238d198c032c9d3fa84ccadf59ea7f0ad06c/dist/mini-default.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css" />
 ' . $inline_css . '
     </head>
     <body>
