@@ -345,7 +345,12 @@ else
                     return errmsg("#errmsg_pkeytype");
                 }
 
-                if(!($("#server_yukari").prop("checked")) && !($("#server_mamizou").prop("checked")) && !($("#server_sumireko").prop("checked")) && !($("#server_raiko").prop("checked")))
+                var checked = false; p.children("div").children("input").toArray().forEach((q) =>
+                {
+                    if (q.checked) checked = true;
+                });
+
+                if(!checked)
                 {
                     return errmsg("#errmsg_noservers");
                 }
