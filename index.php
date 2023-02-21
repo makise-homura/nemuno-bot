@@ -31,6 +31,18 @@ $inline_css = '<style type="text/css">
     text-align: right;
 }
 
+.text-green {
+    color: green;
+}
+
+.text-yellow {
+    color: orange;
+}
+
+.text-red {
+    color: red;
+}
+
 .aligned-block {
     display: inline-block;
 }
@@ -74,6 +86,50 @@ if(isset($_GET["chat_id"]))
             }
         }
         curl_close($ch);
+}
+elseif(isset($_POST["uptime"]))
+{
+    if(!array_key_exists($_POST["server"], $pubkeys))
+    {
+        http_response_code(400);
+        print("No such server\n");
+        die();
+    }
+    set_include_path('phpseclib');
+    include('Crypt/RSA.php');
+    $rsa = new Crypt_RSA();
+    $rsa->loadKey($pubkeys[$_POST["server"]]);
+    $rsa->setHash($_POST["hashtype"]);
+    $rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
+    if($rsa->verify($_POST["uptime"], base64_decode( $_POST["sig"])))
+    {
+        if ($server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
+        {
+            $mysqli = mysqli_connect($server_db_host, $server_db_user, $server_db_password, $server_db_name);
+            if ($mysqli != false)
+            {
+                mysqli_set_charset($mysqli, "utf8mb4");
+                if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%UPTIME%';")) == NULL)
+                {
+                    mysqli_query($mysqli, "CREATE TABLE `UPTIME` ( `HOST` VARCHAR(255) NOT NULL , `UPTIME` VARCHAR(255) , `TIMESTAMP` INT(255) ) ENGINE = MyISAM;");
+                }
+                if(mysqli_fetch_array(mysqli_query($mysqli, "SELECT `UPTIME` FROM `UPTIME` WHERE `HOST` = '" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "';")) == NULL)
+                {
+                    mysqli_query($mysqli, "INSERT INTO `UPTIME` (`HOST`, `UPTIME`, `TIMESTAMP`) VALUES ('" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "', '" . mysqli_real_escape_string($mysqli, base64_decode($_POST["uptime"])) . "', " . time() . ");");
+                }
+                else
+                {
+                    mysqli_query($mysqli, "UPDATE `UPTIME` SET `UPTIME` = '" . mysqli_real_escape_string($mysqli, base64_decode($_POST["uptime"])) . "', `TIMESTAMP` = " . time() . " WHERE `HOST` = '" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "';");
+                }
+            }
+        }
+        print("Uptime" . base64_decode($_POST["uptime"]) . "Accepted for server " . $_POST["server"] . "\n");
+    }
+    else
+    {
+        http_response_code(406);
+        print("Bad signature\n");
+    }
 }
 elseif(isset($_POST["lang"]))
 {
@@ -192,9 +248,41 @@ elseif(isset($_POST["lang"]))
 }
 else
 {
+    if ($server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
+    {
+        $mysqli = mysqli_connect($server_db_host, $server_db_user, $server_db_password, $server_db_name);
+        if ($mysqli != false)
+        {
+            $uptimes = mysqli_fetch_all(mysqli_query($mysqli, "SELECT * FROM `UPTIME`;"), MYSQLI_ASSOC);
+        }
+    }
+
     function gen_labels($server, $labels)
     {
-        return ('                $("#label_server_' . strtolower($server) . '").html("' . $labels[$server] . '");');
+        global $uptimes;
+        $span = '';
+        if (is_array($uptimes))
+        {
+            foreach ($uptimes as $uptime)
+            {
+                if (is_array($uptime) && array_key_exists("HOST", $uptime) && $uptime["HOST"] == $server)
+                {
+                    $color = 'text-green';
+                    $text = str_replace(array("\r", "\n"), '', $uptime["UPTIME"]);
+                    if (time() > $uptime["TIMESTAMP"] + 600)
+                    {
+                        $color = 'text-yellow';
+                    }
+                    if (time() > $uptime["TIMESTAMP"] + 1800)
+                    {
+                        $color = 'text-red';
+                        $text = '<span class=text-offline></span>';
+                    }
+                    $span = '<span class=' . $color . '> - ' . $text . '</span>';
+                }
+            }
+        }
+        return ('                $("#label_server_' . strtolower($server) . '").html("' . $labels[$server] . $span . '");');
     }
 
     function gen_checkboxes($server, $default_servers)
@@ -393,6 +481,7 @@ else
                 $("#errmsg_pkeytype").text("Открытый ключ должен быть одного из следующих типов: ' . implode(", ", $pubkey_types) . '");
                 $("#label_servers").text("Сервера, на которые запрашивается доступ:");
 ' . implode("\n", array_map(function($i) use ($labels_ru) { return (gen_labels($i, $labels_ru)); }, array_keys($ports))) . '
+                $(".text-offline").text("НЕ РАБОТАЕТ");
             }
 
             function localize_en()
@@ -425,6 +514,7 @@ else
                 $("#errmsg_pkeytype").text("Public key should be of one of the folloing types: ' . implode(", ", $pubkey_types) . '");
                 $("#label_servers").text("Servers you want access to:");
 ' . implode("\n", array_map(function($i) use ($labels_en) { return (gen_labels($i, $labels_en)); }, array_keys($ports))) . '
+                $(".text-offline").text("OFFLINE");
             }
         </script>
     </body>

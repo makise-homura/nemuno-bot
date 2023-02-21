@@ -23,4 +23,12 @@ $server_db_user = "";
 $server_db_password = "";
 $server_db_name = "";
 
+$pubkeys = array
+(
+    "Yukari" =>    "ssh-rsa ... key-comment",
+    "Mamizou" =>   "ssh-rsa ... key-comment",
+    "Sumireko" =>  "ssh-rsa ... key-comment",
+    "Raiko" =>     "ssh-rsa ... key-comment"
+);
+
 ?>

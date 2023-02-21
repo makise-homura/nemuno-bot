@@ -74,6 +74,36 @@ Note: if there's more than one server in request, server name will be included i
 
 What if user did not specify a telegram account? Then skip third part, and use the bot (see below).
 
+# Uptime indication (optional)
+
+You may have uptime indication on the webpage people use to request access.
+
+To do this, you should perform the following actions:
+
+First, on each server, execute:
+
+```
+sudo wget https://github.com/makise-homura/nemuno-bot/raw/master/update_uptime.cron -O /etc/cron.d/update_uptime
+sudo wget https://github.com/makise-homura/nemuno-bot/raw/master/update_uptime.sh -O /usr/bin/update_uptime.sh
+sudo chmod 755 /usr/bin/update_uptime.sh
+
+```
+
+Edit `/usr/bin/update_uptime.sh` to change server name (it must case-sensitively match one of the keys of each dictionary you specified in `config.php`) in `SERVER` variable, and URL of your webpage in `URL` variable.
+You may also edit `HASHTYPE` and `PKEYFILE` to match private SSH key of your host.
+
+You should have `uptime`, `base64`, `openssl`, and `curl` programs, and running `cron` on your host.
+You may need to restart `cron` or perform `touch /etc/crontab` for `cron` to recognize newly scheduled task.
+
+Second, get each server's public host SSH key, and specify it in `$pubkeys` dictionary in `config.php`.
+Webpage would accept ONLY uptimes from servers specified in this dictionary, and ONLY if such an uptime report is signed with corresponding host private key.
+For now, only SSH RSA SHA256 keys are known to be supported.
+
+After you did that, your PHP page would accept uptime reports from servers and display them at the main page.
+If any server didn't send reports for more than 10 minutes, its uptime will be shown in orange color instead of green.
+If it didn't contact the webpage for more than 30 minutes, the server is considered dead, and `OFFLINE` mark is shown instead of last uploaded uptime report.
+If server never contacted the webpage, its uptime is not shown (it is considered unconfigured for sending uptime reports due to some valid reason, so this case doesn't count as error).
+
 # Bot (optional)
 
 You will receive messages from the website through the bot even without it running; but if you want users to have some additional info, and you to have some additional control, then let the bot run.
