@@ -1,1 +1,1 @@
-*/10 * * * * nobody /usr/bin/update_uptime.sh
+*/10 * * * * root /usr/bin/update_uptime.sh
