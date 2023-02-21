@@ -1,0 +1,1 @@
+*/10 * * * * nobody /usr/bin/update_uptime.sh
