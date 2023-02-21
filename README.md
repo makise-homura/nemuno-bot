@@ -95,9 +95,11 @@ You may also edit `HASHTYPE` and `PKEYFILE` to match private SSH key of your hos
 You should have `uptime`, `base64`, `openssl`, and `curl` programs, and running `cron` on your host.
 You may need to restart `cron` or perform `touch /etc/crontab` for `cron` to recognize newly scheduled task.
 
-Second, get each server's public host SSH key, and specify it in `$pubkeys` dictionary in `config.php`.
+Second, get each server's public host SSH key, and specify it in `$pubkeys` dictionary in `config.php` on your web server.
 Webpage would accept ONLY uptimes from servers specified in this dictionary, and ONLY if such an uptime report is signed with corresponding host private key.
 For now, only SSH RSA SHA256 keys are known to be supported.
+
+Additionally, you should install [phpseclib](https://sourceforge.net/projects/phpseclib/) to your server (unpack the downloaded ZIP contents into the `phpseclib` subdirectory in your WWW root).
 
 After you did that, your PHP page would accept uptime reports from servers and display them at the main page.
 If any server didn't send reports for more than 10 minutes, its uptime will be shown in orange color instead of green.
