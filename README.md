@@ -86,18 +86,17 @@ First, on each server, execute:
 sudo wget https://github.com/makise-homura/nemuno-bot/raw/master/update_uptime.cron -O /etc/cron.d/update_uptime
 sudo wget https://github.com/makise-homura/nemuno-bot/raw/master/update_uptime.sh -O /usr/bin/update_uptime.sh
 sudo chmod 755 /usr/bin/update_uptime.sh
-
 ```
 
 Edit `/usr/bin/update_uptime.sh` to change server name (it must case-sensitively match one of the keys of each dictionary you specified in `config.php`) in `SERVER` variable, and URL of your webpage in `URL` variable.
-You may also edit `HASHTYPE` and `PKEYFILE` to match private SSH key of your host.
+You may also edit `HASHTYPE` and `PKEYFILE` to match openssl default digest algoritm (hint: try `sha256` or `sha1` if unsure) and path to private SSH key of your host.
 
 You should have `uptime`, `base64`, `openssl`, and `curl` programs, and running `cron` on your host.
 You may need to restart `cron` or perform `touch /etc/crontab` for `cron` to recognize newly scheduled task.
 
 Second, get each server's public host SSH key, and specify it in `$pubkeys` dictionary in `config.php` on your web server.
 Webpage would accept ONLY uptimes from servers specified in this dictionary, and ONLY if such an uptime report is signed with corresponding host private key.
-For now, only SSH RSA SHA256 keys are known to be supported.
+For now, only SSH RSA keys are known to be supported.
 
 Additionally, you should install [phpseclib](https://sourceforge.net/projects/phpseclib/) to your server (unpack the downloaded ZIP contents into the `phpseclib` subdirectory in your WWW root).
 
@@ -105,6 +104,15 @@ After you did that, your PHP page would accept uptime reports from servers and d
 If any server didn't send reports for more than 10 minutes, its uptime will be shown in orange color instead of green.
 If it didn't contact the webpage for more than 30 minutes, the server is considered dead, and `OFFLINE` mark is shown instead of last uploaded uptime report.
 If server never contacted the webpage, its uptime is not shown (it is considered unconfigured for sending uptime reports due to some valid reason, so this case doesn't count as error).
+
+Note: you may run `update_uptime.sh` manually on any host to check if everything is ok. If so, it will print the uptime sent to the server and tell that it is accepted, like this:
+
+```
+Uptime 02:29:06 up 90 days,  8:07,  4 users,  load average: 3,40, 3,71, 3,81
+Accepted for server Raiko
+```
+
+If it prints something like `Bad signature`, check if keys match (e.g. fingerprint of private host key on server of question matches the public one put into `config.php`), and if `openssl` uses the algorithm specified in `HASHTYPE`.
 
 # Bot (optional)
 
@@ -151,31 +159,38 @@ You may learn how to use the bot by sending it the `/help` command.
 
 # What to do if user didn't specify telegram account
 
-Ok, user didn't specify telegram account. How it will work then?
+Ok, user didn't specify telegram account (or specified the wrong one, despite the warning automatically shown to them if username they enter does not exist). How it will work then?
 
 Let us have user with name `cirno`, and assume she applied to be granted the access through web form. Sooner or later she can reach telegram, and ask the bot:
 
 ```
 /state cirno
 ```
+
 So, if you did not process her request, the bot will reply her:
 
 ```
 User cirno is not added on any online servers yet.
 ```
+
 But if she did everything ok, and you've added her to some servers, she will see things like this:
 
 ```
 User cirno is active on following online servers: host9, host999
 ```
+
 She must know how to connect to these servers: she has been told how when she applied for access (and if she forgot, she has a user support chat link on the webpage).
 
 But what if cirno is a baka and did some stuff that isn't allowed, like, sent wrong public key or her username is already used? You can use `/decline` command (available only for admin chat) like this:
+
 ```
 /decline cirno You're a baka and don't know how to apply for the access properly
 ```
+
 And then she'll see in reply for `/state` request:
+
 ```
 User cirno is not added because of: You're a baka and don't know how to apply for the access properly.
 ```
+
 So she could re-apply or ask admin to elaborate and/or add her manually. And when she managed to do all the stuff correctly, you may `/undecline` her.
