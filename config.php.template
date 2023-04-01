@@ -2,6 +2,7 @@
 
 $page_title = "Доступ к серверам Эльбрус";
 $tg_conf = "elbrus_gensokyo";
+$discord = "https://discord.gg/NuBHfyJz";
 $tg_bot = "ElbrusNemunoBot";
 $gw_host = "w205.mcst.ru";
 

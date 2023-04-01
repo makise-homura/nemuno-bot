@@ -136,20 +136,22 @@ elseif(isset($_POST["lang"]))
     if ($_POST["lang"] == "ru")
     {
         $body_hdr = "Ваш запрос отправлен. Когда он будет обработан, ";
+        $disc_hdr = "на <a href=\"" . $discord . "\">Discord-сервер</a> придёт подтверждение и детали подключения";
         $tele_hdr = "в телеграм-аккаунт ";
-        $tele_end = " придёт подтверждение и детали подключения";
-        $body_end = ". Если возникнут вопросы, обращайтесь в телеграм <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>.";
-        $port_hdr = "можно будет получить доступ к этим серверам, зайдя по ssh на хост " . $gw_host . ", на порты: ";
-        $sngl_hdr = "можно будет получить доступ к cерверу, зайдя по ssh на хост " . $gw_host . ", порт ";
+        $tele_end = " и " . $disc_hdr;
+        $body_end = ". Если возникнут вопросы, обращайтесь в телеграм <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>, или на <a href=\"" . $discord . "\">Discord-сервер</a>.";
+        $port_hdr = " и можно будет получить доступ к этим серверам, зайдя по ssh на хост " . $gw_host . ", на порты: ";
+        $sngl_hdr = " и можно будет получить доступ к cерверу, зайдя по ssh на хост " . $gw_host . ", порт ";
         $capt_err = "Проверка ReCAPTCHA не выполнена. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
         $curl_err = "Ошибка при посылке запроса: ";
     }
     else
     {
         $body_hdr = "Your request has been sent. Once it is approved, ";
+        $disc_hdr = "you may check <a href=\"" . $discord . "\">Discord server</a>: there you will have connection details. Still ";
         $tele_hdr = "check telegram ";
-        $tele_end = ": there you will have connection details";
-        $body_end = ". If you have any questions, feel free to ask them in telegram <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>.";
+        $tele_end = " or <a href=\"" . $discord . "\">Discord server</a>: there you will have connection details";
+        $body_end = ". If you have any questions, feel free to ask them in telegram <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>, or on <a href=\"" . $discord . "\">Discord server</a>.";
         $port_hdr = "you will be able to connect to these servers using ssh to host " . $gw_host . ", ports: ";
         $sngl_hdr = "you will be able to connect to server using ssh to host " . $gw_host . ", port ";
         $capt_err = "ReCAPTCHA check failed, return to previous page and try again.";
@@ -221,7 +223,7 @@ elseif(isset($_POST["lang"]))
                 {
                     $portslist = $sngl_hdr . $ports[$servers[0]];
                 }
-                $body = $body_hdr . $portslist . $body_end;
+                $body = $body_hdr . $disc_hdr . $portslist . $body_end;
             }
         }
         curl_close($ch);
@@ -460,6 +462,7 @@ else
                     "в форме ниже, вставить <strong>публичный</strong> ключ (в формате OpenSSH .pub, т.е. одной строчкой) в соответствующее поле (также можно перетащить туда файл с ним), выбрать сервера, " +
                     "к которым запрашивается доступ, нажать галочку рекапчи, опционально ввести имя аккаунта в телеграме, на который будет отправлено оповещение о создании аккаунта и отправить запрос.</p>" +
                     "<p>После того, как запрос послан, можно проверить его статус, написав телеграм-боту <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
+                    "<p>Также оповещения о новых пользователях можно увидеть (а также обсудить всё, касающееся серверов) на <a href=\"' . $discord. '\">Discord-сервере</a>.</p>" +
                     "<p>Время обработки запроса &mdash; от нескольких минут до нескольких дней.</p>" +
                     "<p>Сервис работает в режиме &laquo;как есть&raquo;. Доступность серверов 100% не гарантируется. По любым вопросам обращайтесь в телеграм <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>" +
                     "<p>Если при подключении возникает ошибка \"no mutual signature algorithm\", попробуйте добавить \"PubkeyAcceptedKeyTypes +ssh-rsa\" в конфиг клиента (<a href=\"https://www.reddit.com/r/linuxquestions/comments/qgmnnh/comment/hi785p9/\">см. здесь</a>).</p>" +
@@ -475,8 +478,8 @@ else
                 $("#errmsg_noservers").text("Выберите хотя бы один сервер");
                 $("#errmsg_filesize").text("Открытый ключ должен быть не более 16 кБ размером");
                 $("#errmsg_username").text("Имя пользователя должно быть от 3 до 16 символов, состоять из латинских букв, цифр и знаков подчёркивания и начинаться с буквы");
-                $("#errmsg_telegram").text("Такой пользователь Telegram не обнаружен. Если вы отправите форму с таким именем пользователя, вероятно, вы не получите подтверждения о создании аккаунта.");
-                $("#errmsg_tg_fail").text("Невозможно проверить корректность аккаунта Telegram. Если такой аккаунт не существует, то вероятно, вы не получите подтверждения о создании аккаунта.");
+                $("#errmsg_telegram").text("Такой пользователь Telegram не обнаружен. Если вы отправите форму с таким именем пользователя, вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере).");
+                $("#errmsg_tg_fail").text("Невозможно проверить корректность аккаунта Telegram. Если такой аккаунт не существует, то вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере).");
                 $("#errmsg_publickey").text("Открытый ключ должен быть в формате OpenSSH *.pub: сначала тип ключа, потом строка в Base64, потом опционально комментарий");
                 $("#errmsg_pkeytype").text("Открытый ключ должен быть одного из следующих типов: ' . implode(", ", $pubkey_types) . '");
                 $("#label_servers").text("Сервера, на которые запрашивается доступ:");
@@ -493,6 +496,7 @@ else
                     "in the form below, put yout <strong>public</strong> key (OpenSSH .pub format, i.e. a single line) in the corresponding field (or drag and drop .pub file there), choose servers you want " +
                     "to have access to, perform ReCAPTCHA challenge, optionally you can specify your Telegram username to contact you and send connection details to you, and submit the request.</p>" +
                     "<p>Once request is sent, you may check its state by contacting telegram bot <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
+                    "<p>Also you can check for new user notification (and discuss everything related) on the <a href=\"' . $discord. '\">Discord server</a>.</p>" +
                     "<p>The time it takes to approve a request ranges from a few minutes to several days.</p>" +
                     "<p>Service is offered as is. 100% availability is not guaranteed. For any questions, contact telegram <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>" +
                     "<p>Note: if you have a connection error like \"no mutual signature algorithm\" try adding \"PubkeyAcceptedKeyTypes +ssh-rsa\" in client config. <a href=\"https://www.reddit.com/r/linuxquestions/comments/qgmnnh/comment/hi785p9/\">More info here</a>.</p>" +
@@ -508,8 +512,8 @@ else
                 $("#errmsg_noservers").text("Select at least one server");
                 $("#errmsg_filesize").text("Public key size must be less than 16 kB");
                 $("#errmsg_username").text("Username should be 3 to 16 characters, consisting of latin letters, numbers and underscores, starting with a letter");
-                $("#errmsg_telegram").text("Such Telegram user does not exist. If you sumbit the form with that field filled like that, you highly possibly won\'t receive a confirmation that your account is created.");
-                $("#errmsg_tg_fail").text("Can\'t check if Telegram user exists. If it does not exist, you highly possibly won\'t receive a confirmation that your account is created.");
+                $("#errmsg_telegram").text("Such Telegram user does not exist. If you sumbit the form with that field filled like that, you highly possibly won\'t receive a confirmation that your account is created unless you check the Discord server.");
+                $("#errmsg_tg_fail").text("Can\'t check if Telegram user exists. If it does not exist, you highly possibly won\'t receive a confirmation that your account is created unless you check the Discord server.");
                 $("#errmsg_publickey").text("Public key should be in OpenSSH *.pub format: key type, then Base64 key value, then optionally a comment");
                 $("#errmsg_pkeytype").text("Public key should be of one of the folloing types: ' . implode(", ", $pubkey_types) . '");
                 $("#label_servers").text("Servers you want access to:");

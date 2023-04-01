@@ -21,6 +21,7 @@ Rename `config.php.template` to `config.php` and configure it as follows:
 
 * `$page_title`: website page title
 * `$tg_conf`: @-name of user support chat (without `@`)
+* `$discord`: Invite link to Discord server
 * `$tg_bot`: @-name of bot (without `@`)
 * `$gw_host`: gateway hostname/IP address
 * `$pubkey_types`: types of pubkeys allowed on server
