@@ -74,6 +74,23 @@ Note: if there's more than one server in request, server name will be included i
 
 What if user did not specify a telegram account? Then skip third part, and use the bot (see below).
 
+## Discord integration
+
+If you have a Discord server, you may send user creation notifications directly to it.
+
+Just create a webhook for the desired channel, get its link, and add `c_discord_webhook` variable in `/etc/newu.conf` with this link, like this:
+
+```
+c_discord_webhook="https://discord.com/api/webhooks/1234567890123456789/thisisthefullpathtodiscordwebhookyoucreatedonyourserverfornotifications"
+```
+
+Once you did this, each successful call to `newu` script will send a message to the channel.
+
+Note: it will contain username, server, host and port, and vill be visible to everyone on the server who can read this channel.
+If usernames are not to be disclosed, this option is not for you.
+
+Do not forget to chown `/etc/newu.conf` to the user `newu` is to be run under, and chmod it to 600. Otherwise, your Discord webhook URL will be disclosed to server users!
+
 # Uptime indication (optional)
 
 You may have uptime indication on the webpage people use to request access.

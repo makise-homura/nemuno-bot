@@ -66,3 +66,8 @@ echo -e "\e[1m==================================================================
 [ $qlang = ru ] && echo -e "$qserver Создан пользователь $user. Заходить: хост $c_host, порт $c_port."
 [ $qlang = en ] && echo -e "$qserver User $user is created. Connect to host $c_host, port $c_port."
 echo -e "\e[1m================================================================================\e[0m"
+
+if [ "$c_discord_webhook" ]
+then
+    curl --data "{ \"content\": \"$c_servername: User $user is created. Connect to host $c_host, port $c_port.\" }" -H "Content-Type: application/json" -X POST $c_discord_webhook
+fi
