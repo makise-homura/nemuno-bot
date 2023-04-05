@@ -34,6 +34,7 @@ Rename `config.php.template` to `config.php` and configure it as follows:
 * `$labels_en`: dictionary, where server names are keys, and corresponding labels (in Russian) on the webpage are values
 * `$default_servers`: list of server names that will appear checked on a webpage
 * `$default_lastuid`: user ID from which start to create users if server database is just created (default `"12345"`), see below
+* `$banned_users`: dictionary of usernames which creation isn't allowed on servers (e.g. system users such as `root`)
 
 Currently only `ru` and `en` languages are supported.
 

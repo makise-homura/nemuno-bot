@@ -143,6 +143,7 @@ elseif(isset($_POST["lang"]))
         $port_hdr = " и можно будет получить доступ к этим серверам, зайдя по ssh на хост " . $gw_host . ", на порты: ";
         $sngl_hdr = " и можно будет получить доступ к cерверу, зайдя по ssh на хост " . $gw_host . ", порт ";
         $capt_err = "Проверка ReCAPTCHA не выполнена. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
+        $user_err = "Пользователя с таким именем создать нельзя. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
         $curl_err = "Ошибка при посылке запроса: ";
     }
     else
@@ -155,12 +156,19 @@ elseif(isset($_POST["lang"]))
         $port_hdr = "you will be able to connect to these servers using ssh to host " . $gw_host . ", ports: ";
         $sngl_hdr = "you will be able to connect to server using ssh to host " . $gw_host . ", port ";
         $capt_err = "ReCAPTCHA check failed, return to previous page and try again.";
+        $user_err = "This username is not allowed, return to previous page and try again.";
         $curl_err = "Error sending request: ";
     }
 
     $error = true;
-    if (!empty($_POST["g-recaptcha-response"]))
+    $color = "error";
+    if (in_array($_POST["username"], $banned_users))
     {
+        $body = $user_err;
+    }
+    elseif (!empty($_POST["g-recaptcha-response"]))
+    {
+        $body = $capt_err;
         $out = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=" . RECAPTCHA_SECRET_KEY . "&response=" . $_POST["g-recaptcha-response"]);
         $out = json_decode($out);
         if ($out->success == true)
@@ -168,12 +176,8 @@ elseif(isset($_POST["lang"]))
             $error = false;
         }
     }
-    if ($error)
-    {
-        $color = "error";
-        $body = $capt_err;
-    }
-    else
+
+    if (!$error)
     {
         $lastuid = 0;
 
@@ -214,7 +218,6 @@ elseif(isset($_POST["lang"]))
         curl_exec($ch);
         if($errno = curl_errno($ch))
         {
-            $color = "error";
             $body = $curl_err . curl_strerror($errno) . " " . curl_error($ch);
         }
         else
@@ -327,6 +330,7 @@ else
                 <input id="lang" name="lang" type="hidden">
                 <label id="label_username" for="username"></label>
                 <input id="username" name="username" type="text" placeholder="username">
+                <div id="userror" class="card fluid hidden"><div id="userrorsec" class="section text-centered"></div></div>
                 <label id="label_publickey" for="publickey"></label>
                 <textarea id="publickey" name="publickey" placeholder="ssh-rsa AAAAB3N...2345678== username@hostname"></textarea>
                 <label id="label_telegram" for="telegram"></label>
@@ -395,6 +399,26 @@ else
                 reader.readAsText(event.originalEvent.dataTransfer.files[0], "UTF-8");
             });
 
+            $("#username").blur(function()
+            {
+                if(!($("#username").prop("value").match("^[a-z][a-z0-9_]{2,15}$")))
+                {
+                        $("#userrorsec").text($("#errmsg_username").text());
+                        $("#userror").addClass("error");
+                        $("#userror").removeClass("hidden");
+                }
+                else if(["' . implode("\", \"", $banned_users) . '"].includes($("#username").prop("value")))
+                {
+                        $("#userrorsec").text($("#errmsg_banneduser").text());
+                        $("#userror").addClass("error");
+                        $("#userror").removeClass("hidden");
+                }
+                else
+                {
+                    $("#userror").addClass("hidden");
+                }
+            }
+
             $("#telegram").blur(function()
             {
                 if($("#telegram").val() == "")
@@ -436,6 +460,11 @@ else
                 if(!($("#username").prop("value").match("^[a-z][a-z0-9_]{2,15}$")))
                 {
                     return errmsg("#errmsg_username");
+                }
+
+                if(["' . implode("\", \"", $banned_users) . '"].includes($("#username").prop("value")))
+                {
+                    return errmsg("#errmsg_banneduser");
                 }
 
                 if(!($("#publickey").val().match("^[a-z0-9-]+ [0-9a-zA-Z\+\/=]+( [^ ]*)?$")))
@@ -492,6 +521,7 @@ else
                 $("#errmsg_filesize").text("Открытый ключ должен быть не более 16 кБ размером");
                 $("#errmsg_username").text("Имя пользователя должно быть от 3 до 16 символов, состоять из латинских букв, цифр и знаков подчёркивания и начинаться с буквы");
                 $("#errmsg_telegram").text("Такой пользователь Telegram не обнаружен. Если вы отправите форму с таким именем пользователя, вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере).");
+                $("#errmsg_banneduser").text("Пользователя с таким именем создать нельзя.");
                 $("#errmsg_tg_fail").text("Невозможно проверить корректность аккаунта Telegram. Если такой аккаунт не существует, то вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере).");
                 $("#errmsg_publickey").text("Открытый ключ должен быть в формате OpenSSH *.pub: сначала тип ключа, потом строка в Base64, потом опционально комментарий");
                 $("#errmsg_pkeytype").text("Открытый ключ должен быть одного из следующих типов: ' . implode(", ", $pubkey_types) . '");
@@ -526,6 +556,7 @@ else
                 $("#errmsg_filesize").text("Public key size must be less than 16 kB");
                 $("#errmsg_username").text("Username should be 3 to 16 characters, consisting of latin letters, numbers and underscores, starting with a letter");
                 $("#errmsg_telegram").text("Such Telegram user does not exist. If you sumbit the form with that field filled like that, you highly possibly won\'t receive a confirmation that your account is created unless you check the Discord server.");
+                $("#errmsg_banneduser").text("This username is not allowed.");
                 $("#errmsg_tg_fail").text("Can\'t check if Telegram user exists. If it does not exist, you highly possibly won\'t receive a confirmation that your account is created unless you check the Discord server.");
                 $("#errmsg_publickey").text("Public key should be in OpenSSH *.pub format: key type, then Base64 key value, then optionally a comment");
                 $("#errmsg_pkeytype").text("Public key should be of one of the folloing types: ' . implode(", ", $pubkey_types) . '");
