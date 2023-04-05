@@ -11,6 +11,9 @@ from nemuno_config import token, admin_chatid, dbfile, servers
 from nemuno_l10n import _, message_start, message_help, message_adminhelp, langs
 
 db = sqlite3.connect(dbfile, check_same_thread = False)
+db.execute('CREATE TABLE IF NOT EXISTS timeout  (id varchar(255), data varchar(255));')
+db.execute('CREATE TABLE IF NOT EXISTS declined (id varchar(255), data varchar(255));')
+db.execute('CREATE TABLE IF NOT EXISTS langs    (id varchar(255), data varchar(255));')
 
 bot = telebot.TeleBot(token);
 

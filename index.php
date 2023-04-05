@@ -182,7 +182,20 @@ elseif(isset($_POST["lang"]))
             $mysqli = mysqli_connect($server_db_host, $server_db_user, $server_db_password, $server_db_name);
             if ($mysqli != false)
             {
-                $lastuid = mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';"))["VALUE"];
+                mysqli_set_charset($mysqli, "utf8mb4");
+                if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%PARAMS%';")) == NULL)
+                {
+                    mysqli_query($mysqli, "CREATE TABLE `PARAMS` ( `NAME` VARCHAR(255) NOT NULL , `VALUE` VARCHAR(255) NOT NULL ) ENGINE = MyISAM;");
+                }
+                if(mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `UPTIME` WHERE `NAME` = 'LASTUID';")) == NULL)
+                {
+                    mysqli_query($mysqli, "INSERT INTO `PARAMS` (`NAME`, `VALUE`) VALUES ('LASTUID', '" . $default_lastuid . "');");
+                    $lastuid = $default_lastuid;
+                }
+                else
+                {
+                    $lastuid = mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';"))["VALUE"];
+                }
                 mysqli_query($mysqli, "UPDATE `PARAMS` SET `VALUE` = '" . ($lastuid + 1) . "' WHERE `NAME` = 'LASTUID';");
             }
         }

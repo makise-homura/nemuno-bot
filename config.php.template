@@ -24,6 +24,8 @@ $server_db_user = "";
 $server_db_password = "";
 $server_db_name = "";
 
+$default_lastuid = "12345";
+
 $pubkeys = array
 (
     "Yukari" =>    "ssh-rsa ... key-comment",

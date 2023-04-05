@@ -33,10 +33,11 @@ Rename `config.php.template` to `config.php` and configure it as follows:
 * `$labels_en`: dictionary, where server names are keys, and corresponding labels (in English) on the webpage are values
 * `$labels_en`: dictionary, where server names are keys, and corresponding labels (in Russian) on the webpage are values
 * `$default_servers`: list of server names that will appear checked on a webpage
+* `$default_lastuid`: user ID from which start to create users if server database is just created (default `"12345"`), see below
 
 Currently only `ru` and `en` languages are supported.
 
-You may want created users to have the same user ID and user group ID on all the servers (and UID equal to GID for simplicity).
+You may want created users to have the same user ID and user group ID on all the servers, starting from some `$default_lastuid` (and UID equal to GID for simplicity).
 If so, MySQL should be available to PHP webpage, mysqli module should be enabled for PHP, and you have to create MySQL database on the web server.
 
 In this case, you need to additionally configure this (otherwise, leave these fields blank):
@@ -45,8 +46,6 @@ In this case, you need to additionally configure this (otherwise, leave these fi
 * `$server_db_user`: website MySQL user name
 * `$server_db_password`: website MySQL user password
 * `$server_db_name`: website MySQL database name
-
-Then, create a MySQL database on the web server, edit `create_php_db.sql` to change `12345` to user id from which you wish to start creating users (it should be greater than any existing uid and gid in the system on every server), then execute this SQL over the database.
 
 After you've done all this, upload `config.php` and `index.php` to the server (and make sure `index.php` is the default directory index). Now, for any successful request you will get a message from the bot (see below).
 
@@ -75,7 +74,7 @@ Note: if there's more than one server in request, server name will be included i
 
 What if user did not specify a telegram account? Then skip third part, and use the bot (see below).
 
-## Discord integration
+## Discord integration (optional)
 
 If you have a Discord server, you may send user creation notifications directly to it.
 
@@ -136,9 +135,7 @@ If it prints something like `Bad signature`, check if keys match (e.g. fingerpri
 
 You will receive messages from the website through the bot even without it running; but if you want users to have some additional info, and you to have some additional control, then let the bot run.
 
-First, create a `sqlite3` (not `sqlite`!) database, e.g. `nemuno.db`, and execute `create_bot_db.sql` over it.
-
-Then, from the host where you will run the bot, make sure you can login (e.g. no key mismatch, unknown host warning, etc.) to every target host using public key authentication.
+From the host where you will run the bot, make sure you can login (e.g. no key mismatch, unknown host warning, etc.) to every target host using public key authentication.
 The way you connect may differ from how external users connect to the same servers.
 You should know hostname/IP, port, username, and path to private key for each target host; let call it bot-side parameters `host`, `port`, `user`, and `key` correspondingly.
 
@@ -146,7 +143,7 @@ Then, rename `nemuno_config.py.template` to `nemuno_config.py` and configure it 
 
 * `token`: bot token
 * `admin_chatid`: admin chat id
-* `dbfile`: database file you just created
+* `dbfile`: database file to store data (will be created in current directory if needed)
 * `servers`: dictionary, where where server names are keys, and a dictionary is a value described below.
 
 In `servers`, every subsequent dictionary should consist of:
@@ -159,9 +156,9 @@ In `servers`, every subsequent dictionary should consist of:
 
 Currently only `ru` and `en` languages are supported.
 If you want to localize bot to any other language too, edit `nemuno_l10n.py`: add language code to `langs` list, and then another entry to `l10n` dictionary, where key is your language code, and value is translation dictionary.
-To form the latter one, just copy any other as an example and alter values correspondingly 
+To form the latter one, just copy any other as an example and alter values correspondingly.
 
-After you've done all this, copy `nemuno.db`, `nemuno_config.py`, `nemuno_bot.py`, and `nemuno_l10n.py` to, say, `/var/lib/nemuno`, create user `nemuno` with the same homedir, chown every file inside to `nemuno`.
+After you've done all this, copy `nemuno_config.py`, `nemuno_bot.py`, and `nemuno_l10n.py` to, say, `/var/lib/nemuno`, create user `nemuno` with the same homedir, chown every file inside to `nemuno`.
 Now you're ready to run the bot! Try running `./nemuno_bot.py` and communicate with it through telegram.
 
 If everything's okay, you may let the bot run as a systemd service. This will help it run on boot and restart on failure.
