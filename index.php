@@ -349,6 +349,7 @@ else
             <div class="hidden" id="errmsg_tg_fail"></div>
             <div class="hidden" id="errmsg_recaptcha"></div>
             <div class="hidden" id="errmsg_username"></div>
+            <div class="hidden" id="errmsg_banneduser"></div>
             <div class="hidden" id="errmsg_publickey"></div>
             <div class="hidden" id="errmsg_pkeytype"></div>
             <div class="hidden" id="errmsg_noservers"></div>
@@ -417,7 +418,7 @@ else
                 {
                     $("#userror").addClass("hidden");
                 }
-            }
+            });
 
             $("#telegram").blur(function()
             {
@@ -516,15 +517,15 @@ else
                 $("#username").prop("title", "Разрешены латинские строчные буквы; вторым и далее символом также цифры и знак подчёркивания")
                 $("#publickey").prop("title", "Поддерживается перетаскивание .pub-файла. Поддерживаются ключи ' . implode(", ", $pubkey_types) . '")
                 $("#submitreq").text("Отправить запрос");
-                $("#errmsg_recaptcha").html("Отметьте галочку &laquo;Я не робот&raquo;");
-                $("#errmsg_noservers").text("Выберите хотя бы один сервер");
-                $("#errmsg_filesize").text("Открытый ключ должен быть не более 16 кБ размером");
-                $("#errmsg_username").text("Имя пользователя должно быть от 3 до 16 символов, состоять из латинских букв, цифр и знаков подчёркивания и начинаться с буквы");
+                $("#errmsg_recaptcha").html("Отметьте галочку &laquo;Я не робот&raquo;.");
+                $("#errmsg_noservers").text("Выберите хотя бы один сервер.");
+                $("#errmsg_filesize").text("Открытый ключ должен быть не более 16 кБ размером.");
+                $("#errmsg_username").text("Имя пользователя должно быть от 3 до 16 символов, состоять из латинских букв, цифр и знаков подчёркивания и начинаться с буквы.");
                 $("#errmsg_telegram").text("Такой пользователь Telegram не обнаружен. Если вы отправите форму с таким именем пользователя, вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере).");
                 $("#errmsg_banneduser").text("Пользователя с таким именем создать нельзя.");
                 $("#errmsg_tg_fail").text("Невозможно проверить корректность аккаунта Telegram. Если такой аккаунт не существует, то вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере).");
-                $("#errmsg_publickey").text("Открытый ключ должен быть в формате OpenSSH *.pub: сначала тип ключа, потом строка в Base64, потом опционально комментарий");
-                $("#errmsg_pkeytype").text("Открытый ключ должен быть одного из следующих типов: ' . implode(", ", $pubkey_types) . '");
+                $("#errmsg_publickey").text("Открытый ключ должен быть в формате OpenSSH *.pub: сначала тип ключа, потом строка в Base64, потом опционально комментарий.");
+                $("#errmsg_pkeytype").text("Открытый ключ должен быть одного из следующих типов: ' . implode(", ", $pubkey_types) . '.");
                 $("#label_servers").text("Сервера, на которые запрашивается доступ:");
 ' . implode("\n", array_map(function($i) use ($labels_ru) { return (gen_labels($i, $labels_ru)); }, array_keys($ports))) . '
                 $(".text-offline").text("НЕ РАБОТАЕТ");
@@ -551,15 +552,15 @@ else
                 $("#username").prop("title", "Lowercase latin letters, numbers, underscore are allowed (fist character must be a letter)")
                 $("#publickey").prop("title", "You may either paste key here or drag and drop .pub file. Supported key types: ' . implode(", ", $pubkey_types) . '")
                 $("#submitreq").text("Send a request");
-                $("#errmsg_recaptcha").html("Perform ReCAPTCHA check");
-                $("#errmsg_noservers").text("Select at least one server");
-                $("#errmsg_filesize").text("Public key size must be less than 16 kB");
-                $("#errmsg_username").text("Username should be 3 to 16 characters, consisting of latin letters, numbers and underscores, starting with a letter");
+                $("#errmsg_recaptcha").html("Perform ReCAPTCHA check.");
+                $("#errmsg_noservers").text("Select at least one server.");
+                $("#errmsg_filesize").text("Public key size must be less than 16 kB.");
+                $("#errmsg_username").text("Username should be 3 to 16 characters, consisting of latin letters, numbers and underscores, starting with a letter.");
                 $("#errmsg_telegram").text("Such Telegram user does not exist. If you sumbit the form with that field filled like that, you highly possibly won\'t receive a confirmation that your account is created unless you check the Discord server.");
                 $("#errmsg_banneduser").text("This username is not allowed.");
                 $("#errmsg_tg_fail").text("Can\'t check if Telegram user exists. If it does not exist, you highly possibly won\'t receive a confirmation that your account is created unless you check the Discord server.");
-                $("#errmsg_publickey").text("Public key should be in OpenSSH *.pub format: key type, then Base64 key value, then optionally a comment");
-                $("#errmsg_pkeytype").text("Public key should be of one of the folloing types: ' . implode(", ", $pubkey_types) . '");
+                $("#errmsg_publickey").text("Public key should be in OpenSSH *.pub format: key type, then Base64 key value, then optionally a comment.");
+                $("#errmsg_pkeytype").text("Public key should be of one of the folloing types: ' . implode(", ", $pubkey_types) . '.");
                 $("#label_servers").text("Servers you want access to:");
 ' . implode("\n", array_map(function($i) use ($labels_en) { return (gen_labels($i, $labels_en)); }, array_keys($ports))) . '
                 $(".text-offline").text("OFFLINE");
