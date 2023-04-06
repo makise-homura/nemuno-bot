@@ -52,6 +52,13 @@ After you've done all this, upload `config.php` and `index.php` to the server (a
 
 Message will be sent even when the bot itself is not running.
 
+## What if user with that name already exists
+
+If MySQL database is available, PHP page can check for duplicate user requests.
+The only allowed ones are for adding new servers to account.
+They should have the same telegram account as has been specified before (it shall not be empty; if so, no duplicate request is allowed), and have marked servers which do not have such account already.
+For such requests, UID for this user in bot message will be the same as it was in first request.
+
 # User creation script
 
 Upload `newu` onto each target host. Once it is uploaded, it might be updated by running `newu -U`.

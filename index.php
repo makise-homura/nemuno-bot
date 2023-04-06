@@ -139,12 +139,18 @@ elseif(isset($_POST["lang"]))
         $disc_hdr = "на <a href=\"" . $discord . "\">Discord-сервер</a> придёт подтверждение и детали подключения";
         $tele_hdr = "в телеграм-аккаунт ";
         $tele_end = " и " . $disc_hdr;
-        $body_end = ". Если возникнут вопросы, обращайтесь в телеграм <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>, или на <a href=\"" . $discord . "\">Discord-сервер</a>.";
+        $info_msg = "обращайтесь в телеграм <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>, или на <a href=\"" . $discord . "\">Discord-сервер</a>.";
+        $body_end = ". Если возникнут вопросы, " . $info_msg;
         $port_hdr = " и можно будет получить доступ к этим серверам, зайдя по ssh на хост " . $gw_host . ", на порты: ";
         $sngl_hdr = " и можно будет получить доступ к cерверу, зайдя по ssh на хост " . $gw_host . ", порт ";
         $capt_err = "Проверка ReCAPTCHA не выполнена. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
         $user_err = "Пользователя с таким именем создать нельзя. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
         $curl_err = "Ошибка при посылке запроса: ";
+        $exno_err = "Пользователь " . $_POST["username"] . " уже зарегистрирован и не оставил информации для связи. Такого пользователя создать или изменить автоматически нельзя. Для его изменения " . $info_msg;
+        $extg_err = "Пользователь " . $_POST["username"] . " уже зарегистрирован и оставил другой телеграм-аккаунт для связи: ";
+        $extg_end = ". Заполните форму, указав этот аккаунт, или, если это невозможно, " . $info_msg;
+        $dups_err = "Вы уже зарегистрированы на ";
+        $dups_end = ". Вернитесь и снимите лишние галочки. Если вам нужно обновить публичный ключ, " . $info_msg;
     }
     else
     {
@@ -152,12 +158,19 @@ elseif(isset($_POST["lang"]))
         $disc_hdr = "you may check <a href=\"" . $discord . "\">Discord server</a>: there you will have connection details. Still ";
         $tele_hdr = "check telegram ";
         $tele_end = " or <a href=\"" . $discord . "\">Discord server</a>: there you will have connection details";
-        $body_end = ". If you have any questions, feel free to ask them in telegram <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>, or on <a href=\"" . $discord . "\">Discord server</a>.";
+        $info_msg = "in telegram <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>, or on <a href=\"" . $discord . "\">Discord server</a>.";
+        $body_end = ". If you have any questions, feel free to ask them " . $info_msg;
         $port_hdr = "you will be able to connect to these servers using ssh to host " . $gw_host . ", ports: ";
         $sngl_hdr = "you will be able to connect to server using ssh to host " . $gw_host . ", port ";
         $capt_err = "ReCAPTCHA check failed, return to previous page and try again.";
         $user_err = "This username is not allowed, return to previous page and try again.";
         $curl_err = "Error sending request: ";
+        $exno_err = "User " . $_POST["username"] . " already exists, and did not left a contact info. Cannot add new server to this account. If it's you, ask for manual correction " . $info_msg;
+        $extg_err = "User " . $_POST["username"] . " already exists. If it's you who have created this account before, please specify the same telegram account you used to register: ";
+        $extg_end = ", or ask for changing it " . $info_msg;
+        $dups_err = "You're already registered on ";
+        $dups_end = ". Please go back and deselect it. If you need to update the public key, please ask for this " . $info_msg;
+
     }
 
     $error = true;
@@ -180,6 +193,13 @@ elseif(isset($_POST["lang"]))
     if (!$error)
     {
         $lastuid = 0;
+        $servers = [];
+        foreach (array_keys($ports) as $server)
+        {
+            if(isset($_POST["server_" . strtolower($server) ])) $servers[] = $server;
+        }
+        $tguser = $_POST["telegram"];
+        if(!empty($tguser) && $tguser[0] != "@") $tguser = "@" . $tguser;
 
         if ($server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
         {
@@ -187,62 +207,114 @@ elseif(isset($_POST["lang"]))
             if ($mysqli != false)
             {
                 mysqli_set_charset($mysqli, "utf8mb4");
-                if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%PARAMS%';")) == NULL)
+
+                if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%USERS%';")) == NULL)
                 {
-                    mysqli_query($mysqli, "CREATE TABLE `PARAMS` ( `NAME` VARCHAR(255) NOT NULL , `VALUE` VARCHAR(255) NOT NULL ) ENGINE = MyISAM;");
+                    mysqli_query($mysqli, "CREATE TABLE `USERS` ( `UID` VARCHAR(255) NOT NULL , `NAME` VARCHAR(255) NOT NULL, `TELEGRAM` VARCHAR(255) ) ENGINE = MyISAM;");
                 }
-                if(mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `UPTIME` WHERE `NAME` = 'LASTUID';")) == NULL)
+                if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%SERVERS%';")) == NULL)
                 {
-                    mysqli_query($mysqli, "INSERT INTO `PARAMS` (`NAME`, `VALUE`) VALUES ('LASTUID', '" . $default_lastuid . "');");
-                    $lastuid = $default_lastuid;
+                    mysqli_query($mysqli, "CREATE TABLE `SERVERS` ( `UID` VARCHAR(255) NOT NULL , `SERVER` VARCHAR(255) ) ENGINE = MyISAM;");
+                }
+                $uids = mysqli_fetch_array(mysqli_query($mysqli, "SELECT * FROM `USERS` WHERE `NAME` = '" . mysqli_real_escape_string($mysqli, $_POST["username"]) . "';"));
+                if ($uids == NULL)
+                {
+                    if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%PARAMS%';")) == NULL)
+                    {
+                        mysqli_query($mysqli, "CREATE TABLE `PARAMS` ( `NAME` VARCHAR(255) NOT NULL , `VALUE` VARCHAR(255) NOT NULL ) ENGINE = MyISAM;");
+                    }
+                    if(mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';")) == NULL)
+                    {
+                        mysqli_query($mysqli, "INSERT INTO `PARAMS` (`NAME`, `VALUE`) VALUES ('LASTUID', '" . $default_lastuid . "');");
+                        $lastuid = $default_lastuid;
+                    }
+                    else
+                    {
+                        $lastuid = mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';"))["VALUE"];
+                    }
+                    mysqli_query($mysqli, "UPDATE `PARAMS` SET `VALUE` = '" . ($lastuid + 1) . "' WHERE `NAME` = 'LASTUID';");
+                    mysqli_query($mysqli, "INSERT INTO `USERS` (`UID`, `NAME`, `TELEGRAM`) VALUES ('" . $lastuid . "', '" . $_POST["username"] . "', '" . $tguser . "');");
+
+                    foreach ($servers as $server)
+                    {
+                        mysqli_query($mysqli, "INSERT INTO `SERVERS` (`UID`, `SERVER`) VALUES ('" . $lastuid . "', '" . strtolower($server) . "');");
+                    }
                 }
                 else
                 {
-                    $lastuid = mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';"))["VALUE"];
+                    $lastuid = $uids["UID"];
+                    if($uids["TELEGRAM"] == "")
+                    {
+                        $error = true;
+                        $body = $exno_err;
+                    }
+                    elseif ($uids["TELEGRAM"] != $tguser)
+                    {
+                        $error = true;
+                        $body = $extg_err . $uids["TELEGRAM"] . $extg_end;
+                    }
+                    else
+                    {
+                        $serv_regs = mysqli_fetch_all(mysqli_query($mysqli, "SELECT `SERVER` FROM `SERVERS` WHERE `UID` = '" . $lastuid . "';"));
+                        $serv_dups = [];
+                        foreach($serv_regs as $serv_reg)
+                        {
+                            $serv_dup = array_search($serv_reg[0], array_map('strtolower', $servers));
+                            if($serv_dup !== false) $serv_dups[] = $servers[$serv_dup];
+                        }
+                        if($serv_dups)
+                        {
+                            $error = true;
+                            $body = $dups_err . implode(", ", $serv_dups) . $dups_end;
+                        }
+                        else
+                        {
+                            foreach ($servers as $server)
+                            {
+                                mysqli_query($mysqli, "INSERT INTO `SERVERS` (`UID`, `SERVER`) VALUES ('" . $lastuid . "', '" . strtolower($server) . "');");
+                            }
+                        }
+                    }
                 }
-                mysqli_query($mysqli, "UPDATE `PARAMS` SET `VALUE` = '" . ($lastuid + 1) . "' WHERE `NAME` = 'LASTUID';");
+
             }
         }
 
-        $servers = [];
-        foreach (array_keys($ports) as $server)
+        if (!$error)
         {
-            if(isset($_POST["server_" . strtolower($server) ])) $servers[] = $server;
-        }
-        $tguser = $_POST["telegram"];
-        if($tguser[0] != "@") $tguser = "@" . $tguser;
-        $message = "newu". ($lastuid == 0 ? "" : " -u " . $lastuid) . " --lang " . $_POST["lang"] . (count($servers) < 2 ? "" : " -s") . " " . $_POST["username"] . " " . $_POST["publickey"] . "\nServers: " . implode(", ", $servers) . "\nTelegram account: " . $tguser;
-        $ch = curl_init("https://api.telegram.org/bot" . TELEGRAM_TOKEN . "/sendMessage?chat_id=" . TELEGRAM_CHATID . "&text=" . urlencode($message));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_exec($ch);
-        if($errno = curl_errno($ch))
-        {
-            $body = $curl_err . curl_strerror($errno) . " " . curl_error($ch);
-        }
-        else
-        {
-            $color = "success";
-            if(!empty($_POST["telegram"]))
+            $message = "newu". ($lastuid == 0 ? "" : " -u " . $lastuid) . " --lang " . $_POST["lang"] . (count($servers) < 2 ? "" : " -s") . " " . $_POST["username"] . " " . $_POST["publickey"] . "\nServers: " . implode(", ", $servers) . "\nTelegram account: " . $tguser;
+            $ch = curl_init("https://api.telegram.org/bot" . TELEGRAM_TOKEN . "/sendMessage?chat_id=" . TELEGRAM_CHATID . "&text=" . urlencode($message));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_FAILONERROR, true);
+            curl_exec($ch);
+            if($errno = curl_errno($ch))
             {
-                $body = $body_hdr . $tele_hdr . $_POST["telegram"] . $tele_end . $body_end;
+                $body = $curl_err . curl_strerror($errno) . " " . curl_error($ch);
             }
             else
             {
-                if (count($servers) > 1)
+                $color = "success";
+                if(!empty($_POST["telegram"]))
                 {
-                    $portsarr = [];
-                    foreach ($servers as $server) $portsarr[] = $server . " &mdash; " . $ports[$server];
-                    $portslist = $port_hdr . implode(", ", $portsarr);
+                    $body = $body_hdr . $tele_hdr . $_POST["telegram"] . $tele_end . $body_end;
                 }
                 else
                 {
-                    $portslist = $sngl_hdr . $ports[$servers[0]];
+                    if (count($servers) > 1)
+                    {
+                        $portsarr = [];
+                        foreach ($servers as $server) $portsarr[] = $server . " &mdash; " . $ports[$server];
+                        $portslist = $port_hdr . implode(", ", $portsarr);
+                    }
+                    else
+                    {
+                        $portslist = $sngl_hdr . $ports[$servers[0]];
+                    }
+                    $body = $body_hdr . $disc_hdr . $portslist . $body_end;
                 }
-                $body = $body_hdr . $disc_hdr . $portslist . $body_end;
             }
+            curl_close($ch);
         }
-        curl_close($ch);
     }
     print('<!DOCTYPE html>
 <html>
