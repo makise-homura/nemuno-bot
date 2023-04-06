@@ -78,7 +78,9 @@ Just do the following:
 2. Execute command specified in first line there;
 3. Copy-paste the last message `newu` printed, and send it to the telegram user in the third line.
 
-Note: if there's more than one server in request, server name will be included in each newu output.
+Note 1: if there's more than one server in request, server name will be included in each newu output.
+
+Note 2: if user home directory already exists, it will be reused.
 
 What if user did not specify a telegram account? Then skip third part, and use the bot (see below).
 

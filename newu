@@ -45,13 +45,13 @@ done
 user=$1
 shift
 echo -en "\e[1;31m"
-[ -d $c_homeroot/$user ] && exit 1
+[ -d $c_homeroot/$user ] && ch="-M" || ch="-m"
 [ "$quid" = "-U" ] || sudo groupadd $qgid $user || exit 9
-sudo useradd -d $c_homeroot/$user -m $quid -s /bin/bash $user || exit 2
+sudo useradd -d $c_homeroot/$user $ch $quid -s /bin/bash $user || exit 2
 sudo mkdir -p $c_homeroot/$user/.ssh || exit 3
 sudo chown $user:$user $c_homeroot/$user/.ssh || exit 4
 sudo chmod 700 $c_homeroot/$user/.ssh || exit 5
-echo $@ | sudo tee $c_homeroot/$user/.ssh/authorized_keys > /dev/null || exit 6
+echo $@ | sudo tee -a $c_homeroot/$user/.ssh/authorized_keys > /dev/null || exit 6
 sudo chown $user:$user $c_homeroot/$user/.ssh/authorized_keys || exit 7
 sudo chmod 600 $c_homeroot/$user/.ssh/authorized_keys || exit 8
 echo -e "\n\e[0;1m================================================================================\e[0m"
