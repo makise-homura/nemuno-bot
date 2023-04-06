@@ -144,6 +144,7 @@ elseif(isset($_POST["lang"]))
         $port_hdr = " и можно будет получить доступ к этим серверам, зайдя по ssh на хост " . $gw_host . ", на порты: ";
         $sngl_hdr = " и можно будет получить доступ к cерверу, зайдя по ssh на хост " . $gw_host . ", порт ";
         $capt_err = "Проверка ReCAPTCHA не выполнена. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
+        $none_err = "Вы должны указать хотя бы один сервер. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
         $user_err = "Пользователя с таким именем создать нельзя. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
         $curl_err = "Ошибка при посылке запроса: ";
         $exno_err = "Пользователь " . $_POST["username"] . " уже зарегистрирован и не оставил информации для связи. Такого пользователя создать или изменить автоматически нельзя. Для его изменения " . $info_msg;
@@ -163,6 +164,7 @@ elseif(isset($_POST["lang"]))
         $port_hdr = "you will be able to connect to these servers using ssh to host " . $gw_host . ", ports: ";
         $sngl_hdr = "you will be able to connect to server using ssh to host " . $gw_host . ", port ";
         $capt_err = "ReCAPTCHA check failed, return to previous page and try again.";
+        $none_err = "You should specify at least one server. Return to previous page and try again.";
         $user_err = "This username is not allowed, return to previous page and try again.";
         $curl_err = "Error sending request: ";
         $exno_err = "User " . $_POST["username"] . " already exists, and did not left a contact info. Cannot add new server to this account. If it's you, ask for manual correction " . $info_msg;
@@ -194,14 +196,19 @@ elseif(isset($_POST["lang"]))
     {
         $lastuid = 0;
         $servers = [];
+        $tguser = $_POST["telegram"];
+        if(!empty($tguser) && $tguser[0] != "@") $tguser = "@" . $tguser;
         foreach (array_keys($ports) as $server)
         {
             if(isset($_POST["server_" . strtolower($server) ])) $servers[] = $server;
         }
-        $tguser = $_POST["telegram"];
-        if(!empty($tguser) && $tguser[0] != "@") $tguser = "@" . $tguser;
+        if(!$servers)
+        {
+            $error = true;
+            $body = $none_err;
+        }
 
-        if ($server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
+        if (!$error && $server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
         {
             $mysqli = mysqli_connect($server_db_host, $server_db_user, $server_db_password, $server_db_name);
             if ($mysqli != false)
