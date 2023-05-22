@@ -401,7 +401,7 @@ else
     </head>
     <body>
         <div class="col-sm-offset-1 col-sm-10 col-lg-offset-3 col-lg-6">
-            <div class="text-right"><a id="lang_en" href="." onclick="localize_en();" >ENG</a> | <a id="lang_ru" href="." onclick="localize_ru();" >РУС</a></div>
+            <div class="text-right"><a id="lang_en" href="." onclick="localize_en(); return false;" >ENG</a> | <a id="lang_ru" href="." onclick="localize_ru(); return false;" >РУС</a></div>
             <hr>
             <div class="card fluid"><div id="manual" class="section double-padded text-justified"></div></div>
             <div id="error" class="card fluid hidden"><div id="errorsec" class="section text-centered"></div></div>
