@@ -5,6 +5,8 @@ c_host=w205.mcst.ru
 c_port=8193
 c_homeroot=/export/home
 c_servername=Localhost
+c_userhook_pkeyfile="/etc/ssh/ssh_host_rsa_key"
+c_userhook_hashtype="sha256"
 
 # You may override these default values in /etc/newu.conf
 [ -f /etc/newu.conf ] && . /etc/newu.conf
@@ -70,4 +72,14 @@ echo -e "\e[1m==================================================================
 if [ "$c_discord_webhook" ]
 then
     curl --data "{ \"content\": \"$c_servername: User $user is created. Connect to host $c_host, port $c_port.\" }" -H "Content-Type: application/json" -X POST $c_discord_webhook
+fi
+
+if [ "$c_userhook_url" ]
+then
+    puid="`sudo id -u $user`"
+    uid="`echo -n $puid | base64 -w0`"
+    signature="`echo -n "$uid" | sudo openssl dgst -sign $c_userhook_pkeyfile | base64 -w0`"
+    echo -n " "
+    curl -X POST --data-urlencode user=$uid --data-urlencode sig=$signature --data-urlencode hashtype=$c_userhook_hashtype --data-urlencode server=$c_servername $c_userhook_url
+    echo -e "\e[1m================================================================================\e[0m"
 fi

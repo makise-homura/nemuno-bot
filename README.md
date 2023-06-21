@@ -1,6 +1,6 @@
 # Contents
 
-* PHP page used to send requests through bot
+* PHP page used to send requests through bot and check if requests are accepted
 * Bot used to allow users to know something about the hosts/users
 * Host-side script to create user and apply a public key for them
 
@@ -63,6 +63,10 @@ For such requests, UID for this user in bot message will be the same as it was i
 
 Upload `newu` onto each target host. Once it is uploaded, it might be updated by running `newu -U`.
 Configure `c_homeroot` (where users' home directories reside), `c_host` (gateway hostname/IP), `c_port` (this host's gateway port), and `c_servername` (server name to be displayed) variables in `/etc/newu.conf`.
+Also configure `c_userhook_url`, and optionally, `c_userhook_pkeyfile`, and/or `c_userhook_hashtype` to match server configuration.
+First variable is URL of your PHP page, second one is path to private SSH key of your host, and last one is openssl default digest algoritm (hint: try `sha256` or `sha1` if unsure).
+These three variables let your PHP page know about users being added to certain server, and correctly display this information.
+
 You may also rewrite these variables directly in `newu` script, but this is discouraged because it will be harder to update this script from git repository once it's updated.
 
 Now, when some user applies for access on the website, you will receive the following message to your admin chat:

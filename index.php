@@ -87,7 +87,7 @@ if(isset($_GET["chat_id"]))
         }
         curl_close($ch);
 }
-elseif(isset($_POST["uptime"]))
+elseif(isset($_POST["uptime"]) || isset($_POST["user"]) )
 {
     if(!array_key_exists($_POST["server"], $pubkeys))
     {
@@ -101,7 +101,7 @@ elseif(isset($_POST["uptime"]))
     $rsa->loadKey($pubkeys[$_POST["server"]]);
     $rsa->setHash($_POST["hashtype"]);
     $rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
-    if($rsa->verify($_POST["uptime"], base64_decode( $_POST["sig"])))
+    if($rsa->verify((isset($_POST["uptime"]) ? $_POST["uptime"] : $_POST["user"]), base64_decode($_POST["sig"])))
     {
         if ($server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
         {
@@ -109,21 +109,56 @@ elseif(isset($_POST["uptime"]))
             if ($mysqli != false)
             {
                 mysqli_set_charset($mysqli, "utf8mb4");
-                if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%UPTIME%';")) == NULL)
+
+                if (isset($_POST["uptime"]))
                 {
-                    mysqli_query($mysqli, "CREATE TABLE `UPTIME` ( `HOST` VARCHAR(255) NOT NULL , `UPTIME` VARCHAR(255) , `TIMESTAMP` INT(255) ) ENGINE = MyISAM;");
-                }
-                if(mysqli_fetch_array(mysqli_query($mysqli, "SELECT `UPTIME` FROM `UPTIME` WHERE `HOST` = '" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "';")) == NULL)
-                {
-                    mysqli_query($mysqli, "INSERT INTO `UPTIME` (`HOST`, `UPTIME`, `TIMESTAMP`) VALUES ('" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "', '" . mysqli_real_escape_string($mysqli, base64_decode($_POST["uptime"])) . "', " . time() . ");");
+                    if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%UPTIME%';")) == NULL)
+                    {
+                        mysqli_query($mysqli, "CREATE TABLE `UPTIME` ( `HOST` VARCHAR(255) NOT NULL , `UPTIME` VARCHAR(255) , `TIMESTAMP` INT(255) ) ENGINE = MyISAM;");
+                    }
+                    if(mysqli_fetch_array(mysqli_query($mysqli, "SELECT `UPTIME` FROM `UPTIME` WHERE `HOST` = '" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "';")) == NULL)
+                    {
+                        mysqli_query($mysqli, "INSERT INTO `UPTIME` (`HOST`, `UPTIME`, `TIMESTAMP`) VALUES ('" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "', '" . mysqli_real_escape_string($mysqli, base64_decode($_POST["uptime"])) . "', " . time() . ");");
+                    }
+                    else
+                    {
+                        mysqli_query($mysqli, "UPDATE `UPTIME` SET `UPTIME` = '" . mysqli_real_escape_string($mysqli, base64_decode($_POST["uptime"])) . "', `TIMESTAMP` = " . time() . " WHERE `HOST` = '" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "';");
+                    }
+                    print("Uptime" . base64_decode($_POST["uptime"]) . "Accepted for server " . $_POST["server"] . "\n");
                 }
                 else
                 {
-                    mysqli_query($mysqli, "UPDATE `UPTIME` SET `UPTIME` = '" . mysqli_real_escape_string($mysqli, base64_decode($_POST["uptime"])) . "', `TIMESTAMP` = " . time() . " WHERE `HOST` = '" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "';");
+                    if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%SERVERS%';")) == NULL)
+                    {
+                        http_response_code(404);
+                        print("No servers table in database\n");
+                    }
+                    else
+                    {
+                        if(mysqli_fetch_array(mysqli_query($mysqli, "SELECT `ADDED` FROM `SERVERS` WHERE `SERVER` = '" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "' AND `UID` = '" . mysqli_real_escape_string($mysqli, base64_decode($_POST["user"])) . "';")) == NULL)
+                        {
+                            http_response_code(404);
+                            print("No request for user with UID " . base64_decode($_POST["user"]) . " on server " . $_POST["server"] . " in database\n");
+                        }
+                        else
+                        {
+                            mysqli_query($mysqli, "UPDATE `SERVERS` SET `ADDED` = TRUE WHERE `UID` = '" . mysqli_real_escape_string($mysqli, base64_decode($_POST["user"])) . "' AND `SERVER` = '" . mysqli_real_escape_string($mysqli, $_POST["server"]) . "';");
+                            print("User with UID " . base64_decode($_POST["user"]) . " is accepted for server " . $_POST["server"] . "\n");
+                        }
+                    }
                 }
             }
+            else
+            {
+                http_response_code(503);
+                print("Can't connect to database\n");
+            }
         }
-        print("Uptime" . base64_decode($_POST["uptime"]) . "Accepted for server " . $_POST["server"] . "\n");
+        else
+        {
+            http_response_code(415);
+            print("No database to store uptime\n");
+        }
     }
     else
     {
@@ -131,7 +166,7 @@ elseif(isset($_POST["uptime"]))
         print("Bad signature\n");
     }
 }
-elseif(isset($_POST["lang"]))
+elseif(isset($_POST["op"]))
 {
     if ($_POST["lang"] == "ru")
     {
@@ -141,8 +176,9 @@ elseif(isset($_POST["lang"]))
         $tele_end = " и " . $disc_hdr;
         $info_msg = "обращайтесь в телеграм <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>, или на <a href=\"" . $discord . "\">Discord-сервер</a>.";
         $body_end = ". Если возникнут вопросы, " . $info_msg;
-        $port_hdr = " и можно будет получить доступ к этим серверам, зайдя по ssh на хост " . $gw_host . ", на порты: ";
-        $sngl_hdr = " и можно будет получить доступ к cерверу, зайдя по ssh на хост " . $gw_host . ", порт ";
+        $serv_hdr = " и можно будет получить доступ ";
+        $port_hdr = "к этим серверам, зайдя по ssh на хост " . $gw_host . ", на порты: ";
+        $sngl_hdr = "к cерверу, зайдя по ssh на хост " . $gw_host . ", порт ";
         $capt_err = "Проверка ReCAPTCHA не выполнена. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
         $none_err = "Вы должны указать хотя бы один сервер. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
         $user_err = "Пользователя с таким именем создать нельзя. Вернитесь на предыдущую страницу и попробуйте ещё раз.";
@@ -150,8 +186,13 @@ elseif(isset($_POST["lang"]))
         $exno_err = "Пользователь " . $_POST["username"] . " уже зарегистрирован и не оставил информации для связи. Такого пользователя создать или изменить автоматически нельзя. Для его изменения " . $info_msg;
         $extg_err = "Пользователь " . $_POST["username"] . " уже зарегистрирован и оставил другой телеграм-аккаунт для связи: ";
         $extg_end = ". Заполните форму, указав этот аккаунт, или, если это невозможно, " . $info_msg;
-        $dups_err = "Вы уже зарегистрированы на ";
+        $dups_err = "Вы уже посылали запрос на ";
         $dups_end = ". Вернитесь и снимите лишние галочки. Если вам нужно обновить публичный ключ, " . $info_msg;
+        $reqd_err = "Проверка, добавлен ли пользователь, на этом сайте отключена.";
+        $requ_err = "Пользователь " . $_POST["username"] . " не отправлял запроса на регистрацию на серверах.";
+        $reqs_err = "Для пользователя " . $_POST["username"] . " пока не создан аккаунт на следующих серверах: ";
+        $reqs_msg = "Для пользователя " . $_POST["username"] . " создан аккаунт на всех запрошенных серверах";
+        $reqs_hdr = ". Можно подключиться ";
     }
     else
     {
@@ -161,8 +202,9 @@ elseif(isset($_POST["lang"]))
         $tele_end = " or <a href=\"" . $discord . "\">Discord server</a>: there you will have connection details";
         $info_msg = "in telegram <a href=\"https://t.me/" . $tg_conf. "\">@" . $tg_conf. "</a>, or on <a href=\"" . $discord . "\">Discord server</a>.";
         $body_end = ". If you have any questions, feel free to ask them " . $info_msg;
-        $port_hdr = "you will be able to connect to these servers using ssh to host " . $gw_host . ", ports: ";
-        $sngl_hdr = "you will be able to connect to server using ssh to host " . $gw_host . ", port ";
+        $serv_hdr = "you will be able to connect ";
+        $port_hdr = "to these servers using ssh to host " . $gw_host . ", ports: ";
+        $sngl_hdr = "to server using ssh to host " . $gw_host . ", port ";
         $capt_err = "ReCAPTCHA check failed, return to previous page and try again.";
         $none_err = "You should specify at least one server. Return to previous page and try again.";
         $user_err = "This username is not allowed, return to previous page and try again.";
@@ -170,9 +212,13 @@ elseif(isset($_POST["lang"]))
         $exno_err = "User " . $_POST["username"] . " already exists, and did not left a contact info. Cannot add new server to this account. If it's you, ask for manual correction " . $info_msg;
         $extg_err = "User " . $_POST["username"] . " already exists. If it's you who have created this account before, please specify the same telegram account you used to register: ";
         $extg_end = ", or ask for changing it " . $info_msg;
-        $dups_err = "You're already registered on ";
+        $dups_err = "You're already requested registration on ";
         $dups_end = ". Please go back and deselect it. If you need to update the public key, please ask for this " . $info_msg;
-
+        $reqd_err = "Checking if user is added is not allowed on this instance.";
+        $requ_err = "User " . $_POST["username"] . " has not submitted a request yet.";
+        $reqs_err = "User " . $_POST["username"] . " is not yet accepted on the following servers: ";
+        $reqs_msg = "User " . $_POST["username"] . " is accepted on all requested servers";
+        $reqs_hdr = ". You can connect to ";
     }
 
     $error = true;
@@ -194,133 +240,209 @@ elseif(isset($_POST["lang"]))
 
     if (!$error)
     {
-        $lastuid = 0;
-        $servers = [];
-        $tguser = $_POST["telegram"];
-        if(!empty($tguser) && $tguser[0] != "@") $tguser = "@" . $tguser;
-        foreach (array_keys($ports) as $server)
+        if ($_POST["op"] == "check")
         {
-            if(isset($_POST["server_" . strtolower($server) ])) $servers[] = $server;
-        }
-        if(!$servers)
-        {
-            $error = true;
-            $body = $none_err;
-        }
-
-        if (!$error && $server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
-        {
-            $mysqli = mysqli_connect($server_db_host, $server_db_user, $server_db_password, $server_db_name);
-            if ($mysqli != false)
+            if (!$error && $server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
             {
-                mysqli_set_charset($mysqli, "utf8mb4");
-
-                if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%USERS%';")) == NULL)
+                $mysqli = mysqli_connect($server_db_host, $server_db_user, $server_db_password, $server_db_name);
+                if ($mysqli != false)
                 {
-                    mysqli_query($mysqli, "CREATE TABLE `USERS` ( `UID` VARCHAR(255) NOT NULL , `NAME` VARCHAR(255) NOT NULL, `TELEGRAM` VARCHAR(255) ) ENGINE = MyISAM;");
-                }
-                if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%SERVERS%';")) == NULL)
-                {
-                    mysqli_query($mysqli, "CREATE TABLE `SERVERS` ( `UID` VARCHAR(255) NOT NULL , `SERVER` VARCHAR(255) ) ENGINE = MyISAM;");
-                }
-                $uids = mysqli_fetch_array(mysqli_query($mysqli, "SELECT * FROM `USERS` WHERE `NAME` = '" . mysqli_real_escape_string($mysqli, $_POST["username"]) . "';"));
-                if ($uids == NULL)
-                {
-                    if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%PARAMS%';")) == NULL)
+                    $uids = mysqli_fetch_array(mysqli_query($mysqli, "SELECT `UID` FROM `USERS` WHERE `NAME` = '" . mysqli_real_escape_string($mysqli, $_POST["username"]) . "';"));
+                    if ($uids == NULL)
                     {
-                        mysqli_query($mysqli, "CREATE TABLE `PARAMS` ( `NAME` VARCHAR(255) NOT NULL , `VALUE` VARCHAR(255) NOT NULL ) ENGINE = MyISAM;");
-                    }
-                    if(mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';")) == NULL)
-                    {
-                        mysqli_query($mysqli, "INSERT INTO `PARAMS` (`NAME`, `VALUE`) VALUES ('LASTUID', '" . $default_lastuid . "');");
-                        $lastuid = $default_lastuid;
+                        $body = $requ_err;
                     }
                     else
                     {
-                        $lastuid = mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';"))["VALUE"];
-                    }
-                    mysqli_query($mysqli, "UPDATE `PARAMS` SET `VALUE` = '" . ($lastuid + 1) . "' WHERE `NAME` = 'LASTUID';");
-                    mysqli_query($mysqli, "INSERT INTO `USERS` (`UID`, `NAME`, `TELEGRAM`) VALUES ('" . $lastuid . "', '" . $_POST["username"] . "', '" . $tguser . "');");
-
-                    foreach ($servers as $server)
-                    {
-                        mysqli_query($mysqli, "INSERT INTO `SERVERS` (`UID`, `SERVER`) VALUES ('" . $lastuid . "', '" . strtolower($server) . "');");
-                    }
-                }
-                else
-                {
-                    $lastuid = $uids["UID"];
-                    if($uids["TELEGRAM"] == "")
-                    {
-                        $error = true;
-                        $body = $exno_err;
-                    }
-                    elseif ($uids["TELEGRAM"] != $tguser)
-                    {
-                        $error = true;
-                        $body = $extg_err . $uids["TELEGRAM"] . $extg_end;
-                    }
-                    else
-                    {
-                        $serv_regs = mysqli_fetch_all(mysqli_query($mysqli, "SELECT `SERVER` FROM `SERVERS` WHERE `UID` = '" . $lastuid . "';"));
-                        $serv_dups = [];
-                        foreach($serv_regs as $serv_reg)
+                        $uid = $uids["UID"];
+                        $srvs = mysqli_fetch_all(mysqli_query($mysqli, "SELECT * FROM `SERVERS` WHERE `UID` = '" . $uid. "';"), MYSQLI_ASSOC);
+                        if ($srvs == NULL || empty($srvs))
                         {
-                            $serv_dup = array_search($serv_reg[0], array_map('strtolower', $servers));
-                            if($serv_dup !== false) $serv_dups[] = $servers[$serv_dup];
-                        }
-                        if($serv_dups)
-                        {
-                            $error = true;
-                            $body = $dups_err . implode(", ", $serv_dups) . $dups_end;
+                            $body = $requ_err;
                         }
                         else
                         {
-                            foreach ($servers as $server)
+                            $added = [];
+                            $notyet = [];
+                            foreach ($srvs as $srv)
                             {
-                                mysqli_query($mysqli, "INSERT INTO `SERVERS` (`UID`, `SERVER`) VALUES ('" . $lastuid . "', '" . strtolower($server) . "');");
+                                if ($srv["ADDED"])
+                                {
+                                    $added[] = $srv["SERVER"];
+                                }
+                                else
+                                {
+                                    $notyet[] = $srv["SERVER"];
+                                }
+                            }
+                            if(!empty($notyet))
+                            {
+                                $color = "warning";
+                                $body = $reqs_err . implode(", ", $notyet) . $body_end;
+                            }
+                            elseif(!empty($added))
+                            {
+                                $color = "success";
+                                if (count($added) > 1)
+                                {
+                                    $ci_ports = array_change_key_case($ports);
+                                    $portsarr = [];
+                                    foreach ($added as $server) $portsarr[] = $server . " &mdash; " . $ci_ports[strtolower($server)];
+                                    $portslist = $reqs_hdr . $port_hdr . implode(", ", $portsarr);
+                                }
+                                else
+                                {
+                                    $portslist = $reqs_hdr . $sngl_hdr . $ports[$added[0]];
+                                }
+                                $body = $reqs_msg . $portslist . $body_end;
+                            }
+                            else
+                            {
+                                $body = $requ_err;
                             }
                         }
                     }
                 }
-
-            }
-        }
-
-        if (!$error)
-        {
-            $message = "newu". ($lastuid == 0 ? "" : " -u " . $lastuid) . " --lang " . $_POST["lang"] . (count($servers) < 2 ? "" : " -s") . " " . $_POST["username"] . " " . $_POST["publickey"] . "\nServers: " . implode(", ", $servers) . "\nTelegram account: " . $tguser;
-            $ch = curl_init("https://api.telegram.org/bot" . TELEGRAM_TOKEN . "/sendMessage?chat_id=" . TELEGRAM_CHATID . "&text=" . urlencode($message));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_FAILONERROR, true);
-            curl_exec($ch);
-            if($errno = curl_errno($ch))
-            {
-                $body = $curl_err . curl_strerror($errno) . " " . curl_error($ch);
+                else
+                {
+                    $body = $reqd_err;
+                }
             }
             else
             {
-                $color = "success";
-                if(!empty($_POST["telegram"]))
+                $body = $reqd_err;
+            }
+        }
+        else
+        {
+            $lastuid = 0;
+            $servers = [];
+            $tguser = $_POST["telegram"];
+            if(!empty($tguser) && $tguser[0] != "@") $tguser = "@" . $tguser;
+            foreach (array_keys($ports) as $server)
+            {
+                if(isset($_POST["server_" . strtolower($server) ])) $servers[] = $server;
+            }
+            if(!$servers)
+            {
+                $error = true;
+                $body = $none_err;
+            }
+
+            if (!$error && $server_db_host != "" && $server_db_user != "" && $server_db_password != "" && $server_db_name != "")
+            {
+                $mysqli = mysqli_connect($server_db_host, $server_db_user, $server_db_password, $server_db_name);
+                if ($mysqli != false)
                 {
-                    $body = $body_hdr . $tele_hdr . $_POST["telegram"] . $tele_end . $body_end;
-                }
-                else
-                {
-                    if (count($servers) > 1)
+                    mysqli_set_charset($mysqli, "utf8mb4");
+
+                    if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%USERS%';")) == NULL)
                     {
-                        $portsarr = [];
-                        foreach ($servers as $server) $portsarr[] = $server . " &mdash; " . $ports[$server];
-                        $portslist = $port_hdr . implode(", ", $portsarr);
+                        mysqli_query($mysqli, "CREATE TABLE `USERS` ( `UID` VARCHAR(255) NOT NULL , `NAME` VARCHAR(255) NOT NULL, `TELEGRAM` VARCHAR(255) ) ENGINE = MyISAM;");
+                    }
+                    if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%SERVERS%';")) == NULL)
+                    {
+                        mysqli_query($mysqli, "CREATE TABLE `SERVERS` ( `UID` VARCHAR(255) NOT NULL , `SERVER` VARCHAR(255) , `ADDED` BOOLEAN NOT NULL DEFAULT FALSE ) ENGINE = MyISAM;");
+                    }
+                    $uids = mysqli_fetch_array(mysqli_query($mysqli, "SELECT * FROM `USERS` WHERE `NAME` = '" . mysqli_real_escape_string($mysqli, $_POST["username"]) . "';"));
+                    if ($uids == NULL)
+                    {
+                        if(mysqli_fetch_array(mysqli_query($mysqli, "SHOW TABLES LIKE '%PARAMS%';")) == NULL)
+                        {
+                            mysqli_query($mysqli, "CREATE TABLE `PARAMS` ( `NAME` VARCHAR(255) NOT NULL , `VALUE` VARCHAR(255) NOT NULL ) ENGINE = MyISAM;");
+                        }
+                        if(mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';")) == NULL)
+                        {
+                            mysqli_query($mysqli, "INSERT INTO `PARAMS` (`NAME`, `VALUE`) VALUES ('LASTUID', '" . $default_lastuid . "');");
+                            $lastuid = $default_lastuid;
+                        }
+                        else
+                        {
+                            $lastuid = mysqli_fetch_array(mysqli_query($mysqli, "SELECT `VALUE` FROM `PARAMS` WHERE `NAME` = 'LASTUID';"))["VALUE"];
+                        }
+                        mysqli_query($mysqli, "UPDATE `PARAMS` SET `VALUE` = '" . ($lastuid + 1) . "' WHERE `NAME` = 'LASTUID';");
+                        mysqli_query($mysqli, "INSERT INTO `USERS` (`UID`, `NAME`, `TELEGRAM`) VALUES ('" . $lastuid . "', '" . $_POST["username"] . "', '" . $tguser . "');");
+
+                        foreach ($servers as $server)
+                        {
+                            mysqli_query($mysqli, "INSERT INTO `SERVERS` (`UID`, `SERVER`, `ADDED`) VALUES ('" . $lastuid . "', '" . strtolower($server) . "', FALSE);");
+                        }
                     }
                     else
                     {
-                        $portslist = $sngl_hdr . $ports[$servers[0]];
+                        $lastuid = $uids["UID"];
+                        if($uids["TELEGRAM"] == "")
+                        {
+                            $error = true;
+                            $body = $exno_err;
+                        }
+                        elseif ($uids["TELEGRAM"] != $tguser)
+                        {
+                            $error = true;
+                            $body = $extg_err . $uids["TELEGRAM"] . $extg_end;
+                        }
+                        else
+                        {
+                            $serv_regs = mysqli_fetch_all(mysqli_query($mysqli, "SELECT `SERVER` FROM `SERVERS` WHERE `UID` = '" . $lastuid . "';"));
+                            $serv_dups = [];
+                            foreach($serv_regs as $serv_reg)
+                            {
+                                $serv_dup = array_search($serv_reg[0], array_map('strtolower', $servers));
+                                if($serv_dup !== false) $serv_dups[] = $servers[$serv_dup];
+                            }
+                            if($serv_dups)
+                            {
+                                $error = true;
+                                $body = $dups_err . implode(", ", $serv_dups) . $dups_end;
+                            }
+                            else
+                            {
+                                foreach ($servers as $server)
+                                {
+                                    mysqli_query($mysqli, "INSERT INTO `SERVERS` (`UID`, `SERVER`, `ADDED`) VALUES ('" . $lastuid . "', '" . strtolower($server) . "', FALSE);");
+                                }
+                            }
+                        }
                     }
-                    $body = $body_hdr . $disc_hdr . $portslist . $body_end;
+
                 }
             }
-            curl_close($ch);
+
+            if (!$error)
+            {
+                $message = "newu". ($lastuid == 0 ? "" : " -u " . $lastuid) . " --lang " . $_POST["lang"] . (count($servers) < 2 ? "" : " -s") . " " . $_POST["username"] . " " . $_POST["publickey"] . "\nServers: " . implode(", ", $servers) . "\nTelegram account: " . $tguser;
+                $ch = curl_init("https://api.telegram.org/bot" . TELEGRAM_TOKEN . "/sendMessage?chat_id=" . TELEGRAM_CHATID . "&text=" . urlencode($message));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_FAILONERROR, true);
+                curl_exec($ch);
+                if($errno = curl_errno($ch))
+                {
+                    $body = $curl_err . curl_strerror($errno) . " " . curl_error($ch);
+                }
+                else
+                {
+                    $color = "success";
+                    if(!empty($_POST["telegram"]))
+                    {
+                        $body = $body_hdr . $tele_hdr . $_POST["telegram"] . $tele_end . $body_end;
+                    }
+                    else
+                    {
+                        if (count($servers) > 1)
+                        {
+                            $portsarr = [];
+                            foreach ($servers as $server) $portsarr[] = $server . " &mdash; " . $ports[$server];
+                            $portslist = $serv_hdr . $port_hdr . implode(", ", $portsarr);
+                        }
+                        else
+                        {
+                            $portslist = $serv_hdr . $sngl_hdr . $ports[$servers[0]];
+                        }
+                        $body = $body_hdr . $disc_hdr . $portslist . $body_end;
+                    }
+                }
+                curl_close($ch);
+            }
         }
     }
     print('<!DOCTYPE html>
@@ -422,7 +544,8 @@ else
                 <div class="text-centered">
                     <div class="g-recaptcha aligned-block" data-sitekey="' . RECAPTCHA_SITE_KEY . '"></div>
                 </div>
-                <button id="submitreq" class="primary" type="submit"></button>
+                <button id="submitreq" class="primary" type="submit" name="op" value="submit"></button>
+                <button id="checkreq" class="ternary" type="submit" name="op" value="check"></button>
             </form>
             <div class="hidden" id="errmsg_telegram"></div>
             <div class="hidden" id="errmsg_tg_fail"></div>
@@ -546,25 +669,27 @@ else
                 {
                     return errmsg("#errmsg_banneduser");
                 }
-
-                if(!($("#publickey").val().match("^[a-z0-9-]+ [0-9a-zA-Z\+\/=]+( [^ ]*)?$")))
+                if(document.activeElement.id == "submitreq")
                 {
-                    return errmsg("#errmsg_publickey");
-                }
+                    if(!($("#publickey").val().match("^[a-z0-9-]+ [0-9a-zA-Z\+\/=]+( [^ ]*)?$")))
+                    {
+                        return errmsg("#errmsg_publickey");
+                    }
 
-                if (!["' . implode("\", \"", $pubkey_types) . '"].includes($("#publickey").val().split(" ")[0]))
-                {
-                    return errmsg("#errmsg_pkeytype");
-                }
+                    if (!["' . implode("\", \"", $pubkey_types) . '"].includes($("#publickey").val().split(" ")[0]))
+                    {
+                        return errmsg("#errmsg_pkeytype");
+                    }
 
-                var checked = false; p.children("div").children("input").toArray().forEach((q) =>
-                {
-                    if (q.checked) checked = true;
-                });
+                    var checked = false; p.children("div").children("input").toArray().forEach((q) =>
+                    {
+                        if (q.checked) checked = true;
+                    });
 
-                if(!checked)
-                {
-                    return errmsg("#errmsg_noservers");
+                    if(!checked)
+                    {
+                        return errmsg("#errmsg_noservers");
+                    }
                 }
 
                 var response = grecaptcha.getResponse();
@@ -583,7 +708,7 @@ else
                     "чтобы потом по ним авторизовываться (если у вас уже есть существующая ключевая пара, то можно использовать её), после чего указать имя пользователя " +
                     "в форме ниже, вставить <strong>публичный</strong> ключ (в формате OpenSSH .pub, т.е. одной строчкой) в соответствующее поле (также можно перетащить туда файл с ним), выбрать сервера, " +
                     "к которым запрашивается доступ, нажать галочку рекапчи, опционально ввести имя аккаунта в телеграме, на который будет отправлено оповещение о создании аккаунта и отправить запрос.</p>" +
-                    "<p>После того, как запрос послан, можно проверить его статус, написав телеграм-боту <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
+                    "<p>После того, как запрос послан, можно проверить его статус на этом сайте, введя имя пользователя, поставив галочку рекапчи и нажав кнопку &laquo;Проверить статус запроса&raquo;, или написав телеграм-боту <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
                     "<p>Также оповещения о новых пользователях можно увидеть (а также обсудить всё, касающееся серверов) на <a href=\"' . $discord. '\">Discord-сервере</a>.</p>" +
                     "<p>Время обработки запроса &mdash; от нескольких минут до нескольких дней.</p>" +
                     "<p>Сервис работает в режиме &laquo;как есть&raquo;. Доступность серверов 100% не гарантируется. По любым вопросам обращайтесь в телеграм <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>" +
@@ -592,17 +717,18 @@ else
                 $("#label_username").text("Имя пользователя:")
                 $("#label_publickey").text("Публичный ключ:")
                 $("#label_telegram").text("Аккаунт в телеграме (необязательно) для сообщения о результате (не ID и не телефон, т.е. @user, а не 1234567890 или +79012345678):")
-                $("#telegram").prop("title", "Внимание: вы не сможете получить оповещение о готовности аккаунта, если не укажете здесь контакт для связи")
+                $("#telegram").prop("title", "Внимание: вы не сможете получить оповещение о готовности аккаунта, если не укажете здесь контакт для связи; в таком случае периодически заходите сюда и проверяйте")
                 $("#username").prop("title", "Разрешены латинские строчные буквы; вторым и далее символом также цифры и знак подчёркивания")
                 $("#publickey").prop("title", "Поддерживается перетаскивание .pub-файла. Поддерживаются ключи ' . implode(", ", $pubkey_types) . '")
                 $("#submitreq").text("Отправить запрос");
+                $("#checkreq").text("Проверить статус запроса");
                 $("#errmsg_recaptcha").html("Отметьте галочку &laquo;Я не робот&raquo;.");
                 $("#errmsg_noservers").text("Выберите хотя бы один сервер.");
                 $("#errmsg_filesize").text("Открытый ключ должен быть не более 16 кБ размером.");
                 $("#errmsg_username").text("Имя пользователя должно быть от 3 до 16 символов, состоять из латинских букв, цифр и знаков подчёркивания и начинаться с буквы.");
-                $("#errmsg_telegram").text("Такой пользователь Telegram не обнаружен. Если вы отправите форму с таким именем пользователя, вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере).");
+                $("#errmsg_telegram").text("Такой пользователь Telegram не обнаружен. Если вы отправите форму с таким именем пользователя, вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере или проверить, добавлен ли пользователь, на этом сайте).");
                 $("#errmsg_banneduser").text("Пользователя с таким именем создать нельзя.");
-                $("#errmsg_tg_fail").text("Невозможно проверить корректность аккаунта Telegram. Если такой аккаунт не существует, то вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере).");
+                $("#errmsg_tg_fail").text("Невозможно проверить корректность аккаунта Telegram. Если такой аккаунт не существует, то вероятно, вы не получите подтверждения о создании аккаунта (впрочем, его можно будет увидеть на Discord-сервере или проверить, добавлен ли пользователь, на этом сайте).");
                 $("#errmsg_publickey").text("Открытый ключ должен быть в формате OpenSSH *.pub: сначала тип ключа, потом строка в Base64, потом опционально комментарий.");
                 $("#errmsg_pkeytype").text("Открытый ключ должен быть одного из следующих типов: ' . implode(", ", $pubkey_types) . '.");
                 $("#label_servers").text("Сервера, на которые запрашивается доступ:");
@@ -618,7 +744,7 @@ else
                     "to authenticate on these servers (if you already have a key pair, you could probably use it), then you should specify your user name " +
                     "in the form below, put yout <strong>public</strong> key (OpenSSH .pub format, i.e. a single line) in the corresponding field (or drag and drop .pub file there), choose servers you want " +
                     "to have access to, perform ReCAPTCHA challenge, optionally you can specify your Telegram username to contact you and send connection details to you, and submit the request.</p>" +
-                    "<p>Once request is sent, you may check its state by contacting telegram bot <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
+                    "<p>Once request is sent, you may check its state on this website by entering your username, performing ReCAPTCHA challenge and clicking \'Check if a request is processed\' button, or by contacting telegram bot <a href=\"https://t.me/' . $tg_bot. '\">@' . $tg_bot. '</a>.</p>" +
                     "<p>Also you can check for new user notification (and discuss everything related) on the <a href=\"' . $discord. '\">Discord server</a>.</p>" +
                     "<p>The time it takes to approve a request ranges from a few minutes to several days.</p>" +
                     "<p>Service is offered as is. 100% availability is not guaranteed. For any questions, contact telegram <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>" +
@@ -627,19 +753,20 @@ else
                 $("#label_username").text("Username:")
                 $("#label_publickey").text("Public key:")
                 $("#label_telegram").text("Telegram username (optional) to contact (not ID or phone, e.g. @user, not 1234567890 or +79012345678):")
-                $("#telegram").prop("title", "Note: you won\'t be able to receive a confirmation, if you don\'t specify a contact here")
+                $("#telegram").prop("title", "Note: you won\'t be able to receive a confirmation, if you don\'t specify a contact here; in this case you may periodically check if your account is created, on this website")
                 $("#username").prop("title", "Lowercase latin letters, numbers, underscore are allowed (fist character must be a letter)")
                 $("#publickey").prop("title", "You may either paste key here or drag and drop .pub file. Supported key types: ' . implode(", ", $pubkey_types) . '")
                 $("#submitreq").text("Send a request");
+                $("#checkreq").text("Check if a request is processed");
                 $("#errmsg_recaptcha").html("Perform ReCAPTCHA check.");
                 $("#errmsg_noservers").text("Select at least one server.");
                 $("#errmsg_filesize").text("Public key size must be less than 16 kB.");
                 $("#errmsg_username").text("Username should be 3 to 16 characters, consisting of latin letters, numbers and underscores, starting with a letter.");
-                $("#errmsg_telegram").text("Such Telegram user does not exist. If you sumbit the form with that field filled like that, you highly possibly won\'t receive a confirmation that your account is created unless you check the Discord server.");
+                $("#errmsg_telegram").text("Such Telegram user does not exist. If you sumbit the form with that field filled like that, you highly possibly won\'t receive a confirmation that your account is created unless you check it on the Discord server or this website.");
                 $("#errmsg_banneduser").text("This username is not allowed.");
-                $("#errmsg_tg_fail").text("Can\'t check if Telegram user exists. If it does not exist, you highly possibly won\'t receive a confirmation that your account is created unless you check the Discord server.");
+                $("#errmsg_tg_fail").text("Can\'t check if Telegram user exists. If it does not exist, you highly possibly won\'t receive a confirmation that your account is created unless you check it on the Discord server or this website.");
                 $("#errmsg_publickey").text("Public key should be in OpenSSH *.pub format: key type, then Base64 key value, then optionally a comment.");
-                $("#errmsg_pkeytype").text("Public key should be of one of the folloing types: ' . implode(", ", $pubkey_types) . '.");
+                $("#errmsg_pkeytype").text("Public key should be of one of the following types: ' . implode(", ", $pubkey_types) . '.");
                 $("#label_servers").text("Servers you want access to:");
 ' . implode("\n", array_map(function($i) use ($labels_en) { return (gen_labels($i, $labels_en)); }, array_keys($ports))) . '
                 $(".text-offline").text("OFFLINE");
