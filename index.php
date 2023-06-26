@@ -283,16 +283,16 @@ elseif(isset($_POST["op"]))
                             elseif(!empty($added))
                             {
                                 $color = "success";
+                                $ci_ports = array_change_key_case($ports);
                                 if (count($added) > 1)
                                 {
-                                    $ci_ports = array_change_key_case($ports);
                                     $portsarr = [];
                                     foreach ($added as $server) $portsarr[] = $server . " &mdash; " . $ci_ports[strtolower($server)];
                                     $portslist = $reqs_hdr . $port_hdr . implode(", ", $portsarr);
                                 }
                                 else
                                 {
-                                    $portslist = $reqs_hdr . $sngl_hdr . $ports[$added[0]];
+                                    $portslist = $reqs_hdr . $sngl_hdr . $ci_ports[strtolower($added[0])];
                                 }
                                 $body = $reqs_msg . $portslist . $body_end;
                             }
