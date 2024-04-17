@@ -1,0 +1,17 @@
+#!/bin/bash
+
+DIR=`realpath "$0"`
+TS=0
+SEC=`cat "$DIR/limit"`
+LIM=$((`/usr/bin/date +%s` - $SEC))
+[ -f "$DIR/$1.timestamp" ] && TS=`cat "$DIR/$1.timestamp"`
+if [ $TS -le $LIM ]
+then
+    BMC=`cat "$DIR/$1.bmc"`
+    /usr/bin/ssh -i "$DIR/$BMC.pk" -l `cat "$DIR/$BMC.user"` $BMC `cat "$DIR/$BMC.command"`
+    echo "Reset server $1 at `date`" >> "$DIR/$1.log"
+    [ -f "$DIR/https_proxy" ] && export https_proxy=`cat "$DIR/https_proxy"`
+    [ -f "$DIR/webhook" ] && /usr/bin/curl --data "{ \"content\": \"Notice: Server $1 was unavailable at `date`, performed cold reset.\" }" -H "Content-Type: application/json" -X POST `cat "$DIR/webhook"`
+else
+    echo "Server $1 is alive at `date`" >> "$DIR/$1.log"
+fi

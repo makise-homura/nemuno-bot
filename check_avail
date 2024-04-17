@@ -1,0 +1,4 @@
+#!/bin/bash
+
+DIR=`realpath "$0"`
+/usr/bin/ssh -i "$DIR/$1.pk" -p `cat "$DIR/$1.port"` -l `cat "$DIR/$1.user"` `cat "$DIR/$1.host"` true && /usr/bin/date +%s > "$DIR/$1.timestamp"

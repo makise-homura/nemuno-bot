@@ -145,6 +145,39 @@ Accepted for server Raiko
 
 If it prints something like `Bad signature`, check if keys match (e.g. fingerprint of private host key on server of question matches the public one put into `config.php`), and if `openssl` uses the algorithm specified in `HASHTYPE`.
 
+# Automatic reboot (optional)
+
+You may automatically reboot servers if they fail to be accessed in specified time.
+
+To do this, you need a ssh-enabled BMC on each server, and a machine (may or may not be available from internet) that can access these BMCs and servers (we'll call it *pinger* later).
+This was tested on Elbrus servers and [REIMU](https://github.com/makise-homura/openbmc/releases/tag/reimu-1.0.2)-powered BMCs.
+Servers may be accessible from pinger directly of via SSH gateway; BMC should be accessible directly (or configured correspondlingly in `ssh_config`).
+
+Proceed as follows:
+* Create an unprivileged user on each server, and a user who can issue platform reboot on each BMC, and make sure you can log in from pinger to every server and every BMC using public key authentication (e.g. put a private key to pinger, and add a public one to `authorized_keys`).
+* Make sure pinger has `/usr/bin/ssh`, `/usr/bin/date`, `/usr/bin/curl`, and `/bin/bash` with `realpath`, `cat`, `echo` commands supported.
+* Put `check_avail` and `reset_unavail` into some directory on pinger, and create required files there (see below).
+* Put `check_and_reset.cron` as `/etc/cron.d/check_and_reset` onto pinger. Edit paths in this file according to the previous step, and copy the two lines you find there as many times as there are servers. Edit hostnames correspondlingly in each pair of lines.
+* Make sure pinger has CRON running and aware of the file above.
+
+The files required for `check_avail` and `reset_unavail` are (for each server named `hostname`):
+* `hostname.pk`: a private key to log in to a server named `hostname`.
+* `hostname.port`: SSH port to log in to a server named `hostname` (usually 22 if you don't have a gateway).
+* `hostname.user`: username to log in to a server named `hostname` (the user you created on the server before).
+* `hostname.host`: actual hostname to log in to a server named `hostname` (may be the same as `hostname`, or different, if you use a gateway).
+* `hostname.bmc`: hostname of BMC of server named `hostname` (will be known as `bmc_hostname` below).
+* `bmc_hostname.user`: username to log in to a BMC named `bmc_hostname`.
+* `bmc_hostname.pk`: a private key to log in to a BMC named `bmc_hostname`.
+* `bmc_hostname.command`: a command to execute on BMC named `bmc_hostname` is unavailable (e.g `server_reset` for REIMU).
+
+The following files are common for all servers:
+* `limit`: limit in seconds, after which server is to be rebooted if unavailable for this amount of time. E.g. if you want an hour, use `3600`.
+* `https_proxy` (optional): HTTPS proxy to send webhook message. If doesn't exist, no proxy is used (unless explicitly specified in CRON script).
+* `webhook` (optional): Discord webhook to send notification message to (like "Notice: Server ... was unavailable at ..., performed cold reset.") if some server is rebooted due to unavailability. If doesn't exist, no message is sent.
+
+Each time `reset_unavail` is called by CRON for a server `hostname`, it appends a message (like "Server ... is alive at ..." if last check by `check_avail` succeeded, and "Reset server ... at ..." if it was unsuccessful for a specified time and rebooted) to a logfile `hostname.log`.
+Timestamp of a last check by `check_avail` is saved into `hostname.timestamp` file.
+
 # Bot (optional)
 
 You will receive messages from the website through the bot even without it running; but if you want users to have some additional info, and you to have some additional control, then let the bot run.

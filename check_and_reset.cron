@@ -1,0 +1,2 @@
+*/10 * * * * root /bin/bash /path_to/check_avail hostname
+*/10 * * * * root /bin/bash /path_to/reset_unavail hostname
