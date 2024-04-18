@@ -154,8 +154,10 @@ This was tested on Elbrus servers and [REIMU](https://github.com/makise-homura/o
 Servers may be accessible from pinger directly of via SSH gateway; BMC should be accessible directly (or configured correspondlingly in `ssh_config`).
 
 Proceed as follows:
-* Create an unprivileged user on each server, and a user who can issue platform reboot on each BMC, and make sure you can log in from pinger to every server and every BMC using public key authentication (e.g. put a private key to pinger, and add a public one to `authorized_keys`).
-* Make sure pinger has `/usr/bin/ssh`, `/usr/bin/date`, `/usr/bin/curl`, and `/bin/bash` with `realpath`, `cat`, `echo` commands supported.
+* Create an unprivileged user on each server, who can execute `true` command by an ssh session.
+* Create an user who can issue platform reboot on each BMC.
+* Make sure you can log in from pinger to every server and every BMC using public key authentication (e.g. put a private key to pinger, and add a public one to `authorized_keys`, and connect at least once to add both of them to `known_hosts`).
+* Make sure pinger has `/usr/bin/ssh`, `/bin/date`, `/usr/bin/curl`, `/usr/bin/realpath`, `/usr/bin/dirname`, `/bin/cat`, and `/bin/bash` with `echo` builtin supported.
 * Put `check_avail` and `reset_unavail` into some directory on pinger, and create required files there (see below).
 * Put `check_and_reset.cron` as `/etc/cron.d/check_and_reset` onto pinger. Edit paths in this file according to the previous step, and copy the two lines you find there as many times as there are servers. Edit hostnames correspondlingly in each pair of lines.
 * Make sure pinger has CRON running and aware of the file above.

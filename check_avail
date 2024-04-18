@@ -1,13 +1,13 @@
 #!/bin/bash
 
-DIR=`realpath "$0"`
-[ -f "$DIR/$1.port" ] && PORT=`cat "$DIR/$1.port"` || PORT="22"
-[ -f "$DIR/$1.user" ] && USER=`cat "$DIR/$1.user"` || USER="root"
-[ -f "$DIR/$1.host" ] && HOST=`cat "$DIR/$1.host"` || HOST="$1"
+DIRP=`/usr/bin/realpath "$0"`; DIR=`/usr/bin/dirname "$DIRP"`
+[ -f "$DIR/$1.port" ] && PORT=`/bin/cat "$DIR/$1.port"` || PORT="22"
+[ -f "$DIR/$1.user" ] && USER=`/bin/cat "$DIR/$1.user"` || USER="root"
+[ -f "$DIR/$1.host" ] && HOST=`/bin/cat "$DIR/$1.host"` || HOST="$1"
 
 if [ -f "$DIR/$1.pk" ]
 then
-    /usr/bin/ssh -i "$DIR/$1.pk" -p "$PORT" -l "$USER" "$HOST" true && /usr/bin/date +%s > "$DIR/$1.timestamp"
+    /usr/bin/ssh -i "$DIR/$1.pk" -p "$PORT" -l "$USER" "$HOST" true && /bin/date +%s > "$DIR/$1.timestamp"
 else
-    /usr/bin/ssh -p "$PORT" -l "$USER" "$HOST" true && /usr/bin/date +%s > "$DIR/$1.timestamp"
+    /usr/bin/ssh -p "$PORT" -l "$USER" "$HOST" true && /bin/date +%s > "$DIR/$1.timestamp"
 fi
