@@ -161,17 +161,17 @@ Proceed as follows:
 * Make sure pinger has CRON running and aware of the file above.
 
 The files required for `check_avail` and `reset_unavail` are (for each server named `hostname`):
-* `hostname.pk`: a private key to log in to a server named `hostname`.
-* `hostname.port`: SSH port to log in to a server named `hostname` (usually 22 if you don't have a gateway).
-* `hostname.user`: username to log in to a server named `hostname` (the user you created on the server before).
-* `hostname.host`: actual hostname to log in to a server named `hostname` (may be the same as `hostname`, or different, if you use a gateway).
-* `hostname.bmc`: hostname of BMC of server named `hostname` (will be known as `bmc_hostname` below).
-* `bmc_hostname.user`: username to log in to a BMC named `bmc_hostname`.
-* `bmc_hostname.pk`: a private key to log in to a BMC named `bmc_hostname`.
-* `bmc_hostname.command`: a command to execute on BMC named `bmc_hostname` is unavailable (e.g `server_reset` for REIMU).
+* `hostname.pk` (optional): a private key to log in to a server named `hostname`. If doesn't exist, `ssh` uses the default key.
+* `hostname.port` (optional): SSH port to log in to a server named `hostname`. If doesn't exist, defaults to `22`.
+* `hostname.user` (optional): username to log in to a server named `hostname` (the user you created on the server before). If doesn't exist, defaults to `root`.
+* `hostname.host` (optional): actual hostname to log in to a server named `hostname`. If doesn't exist, defaults to hostname itself.
+* `hostname.bmc`: hostname of BMC of server named `hostname` (will be known as `bmc_hostname` below). Note: this file is required. If doesn't exist, no reboot is issued and error message is written to log file.
+* `bmc_hostname.user` (optional): username to log in to a BMC named `bmc_hostname`. If doesn't exist, defaults to `root`.
+* `bmc_hostname.pk` (optional): a private key to log in to a BMC named `bmc_hostname`. If doesn't exist, `ssh` uses the default key.
+* `bmc_hostname.command` (optional): a command to execute on BMC named `bmc_hostname` is unavailable. If doesn't exist, defaults to `server_reset` (as for REIMU).
 
 The following files are common for all servers:
-* `limit`: limit in seconds, after which server is to be rebooted if unavailable for this amount of time. E.g. if you want an hour, use `3600`.
+* `limit` (optional): limit in seconds, after which server is to be rebooted if unavailable for this amount of time. If doesn't exist, defaults to `3600` (an hour).
 * `https_proxy` (optional): HTTPS proxy to send webhook message. If doesn't exist, no proxy is used (unless explicitly specified in CRON script).
 * `webhook` (optional): Discord webhook to send notification message to (like "Notice: Server ... was unavailable at ..., performed cold reset.") if some server is rebooted due to unavailability. If doesn't exist, no message is sent.
 
