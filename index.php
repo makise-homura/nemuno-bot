@@ -715,7 +715,7 @@ else
                     "<p>Сервис работает в режиме &laquo;как есть&raquo;. Доступность серверов 100% не гарантируется. По любым вопросам обращайтесь в телеграм <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>" +
                     "<p>Если при подключении возникает ошибка \"no mutual signature algorithm\", попробуйте добавить \"PubkeyAcceptedKeyTypes +ssh-rsa\" в конфиг клиента (<a href=\"https://www.reddit.com/r/linuxquestions/comments/qgmnnh/comment/hi785p9/\">см. здесь</a>).</p>" +
                     "<p>Если PuTTY не подключается и выдаёт ошибку типа \"Couldn\'t agree on host key algorithm\", необходимо <a href=\"https://sysadmins.online/threads/17881/\">его обновить</a>.</p>")
-                $("#holidaynote").text("Поскольку администратор будет в отпуске с 16 июля по 7 августа, запросы, поступившие в этот период, будут обработаны только после 7 августа.")
+                $("#holidaynote").text("Поскольку администратор будет в отпуске с 11 июля по 2 августа, запросы, поступившие в этот период, будут обработаны только после 2 августа.")
                 $("#label_username").text("Имя пользователя:")
                 $("#label_publickey").text("Публичный ключ:")
                 $("#label_telegram").text("Аккаунт в телеграме (необязательно) для сообщения о результате (не ID и не телефон, т.е. @user, а не 1234567890 или +79012345678):")
@@ -752,7 +752,7 @@ else
                     "<p>Service is offered as is. 100% availability is not guaranteed. For any questions, contact telegram <a href=\"https://t.me/' . $tg_conf. '\">@' . $tg_conf. '</a>.</p>" +
                     "<p>Note: if you have a connection error like \"no mutual signature algorithm\" try adding \"PubkeyAcceptedKeyTypes +ssh-rsa\" in client config. <a href=\"https://www.reddit.com/r/linuxquestions/comments/qgmnnh/comment/hi785p9/\">More info here</a>.</p>" +
                     "<p>If you have PuTTY, and get an error like \"Couldn\'t agree on host key algorithm\", just <a href=\"https://sysadmins.online/threads/17881/\">update your client</a>.</p>")
-                $("#holidaynote").text("Server administrator will be unavailable since July 16 till August 7, so requests submitted at this period, will be approved only after August 7.")
+                $("#holidaynote").text("Server administrator will be unavailable since July 11 till August 2, so requests submitted at this period, will be approved only after August 2.")
                 $("#label_username").text("Username:")
                 $("#label_publickey").text("Public key:")
                 $("#label_telegram").text("Telegram username (optional) to contact (not ID or phone, e.g. @user, not 1234567890 or +79012345678):")
