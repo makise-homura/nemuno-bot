@@ -1,0 +1,46 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          ciadpi
+# Required-Start:    $network $syslog
+# Required-Stop:     $network $syslog
+# Default-Start:     3 5
+# Default-Stop:      0 6
+# Short-Description: DPI prevention tool
+# Description:       DPI prevention tool (https://github.com/hufrea/byedpi)
+### END INIT INFO
+
+. /etc/sysconfig/rc
+. ${rc_functions}
+
+PORT=1080
+PROG=ciadpi
+BINARY=/usr/bin/ciadpi
+PARAMS="--disorder 1 --auto=torst --tlsrec 1+s"
+
+case "${1}" in
+    start)
+        boot_mesg "Starting $PROG at socks5://`hostname`:$PORT... "
+        loadproc $BINARY -p $PORT $PARAMS &
+        evaluate_retval
+        ;;
+    stop)
+        boot_mesg "Stopping $PROG... "
+        killproc $BINARY
+        evaluate_retval
+        ;;
+    status)
+        statusproc $BINARY
+        exit $?
+        ;;
+    restart)
+        ${0} stop
+        sleep 1
+        ${0} start
+        ;;
+    *)
+        echo "Usage ${0} {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0

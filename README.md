@@ -105,6 +105,22 @@ If usernames are not to be disclosed, this option is not for you.
 
 Do not forget to chown `/etc/newu.conf` to the user `newu` is to be run under, and chmod it to 600. Otherwise, your Discord webhook URL will be disclosed to server users!
 
+### Avoiding Discord ban in Russia
+
+Download [ByeDPI](https://github.com/hufrea/byedpi), build and install it.
+
+If you have sysvinit-based OS (e.g. OS Elbrus), copy the supplied `ciadpi.rc` file to `/etc/init.d/ciadpi`, and execute `sudo chkconfig ciadpi on && sudo service ciadpi start`.
+
+Add the following line to `/etc/newu.conf`:
+```
+c_discord_curlparams="--proxy socks5://localhost:1080"
+```
+
+If you already use ByeDPI in your network, you might just replace `localhost` with the address of server it's installed on (and don't bother with installing it at the local machine).
+Obviously ByeDPI should be open to the network (e.g. not be run with `-i` other than `-i 0.0.0.0`) in this case.
+
+You might consider modifying `PARAMS` in `ciadpi.rc` or `BYEDPI_OPTIONS` in `byedpi.conf` and restarting service if `curl --proxy socks5://localhost:1080 https://discord.com` does not work.
+
 # Uptime indication (optional)
 
 You may have uptime indication on the webpage people use to request access.
