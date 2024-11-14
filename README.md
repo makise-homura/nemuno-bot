@@ -121,6 +121,17 @@ Obviously ByeDPI should be open to the network (e.g. not be run with `-i` other 
 
 You might consider modifying `PARAMS` in `ciadpi.rc` or `BYEDPI_OPTIONS` in `byedpi.conf` and restarting service if `curl --proxy socks5://localhost:1080 https://discord.com` does not work.
 
+If your system's OpenSSH/GnuTLS does not support TLSv1.3, then probably you won't be able to use locally installed curl with ByeDPI.
+In that case, you may use statically built curl that supports it.
+To achieve that, specify something like `c_curl_cmd="/opt/curl-static/curl"` in `/etc/newu.conf`.
+This curl will be used only for Discord webhook, not for other purposes.
+
+You even can use curl from other machine that is available by ssh. To do this, use (by supplying its path in `c_curl_cmd`) a wrapper script like this (replace `REMOTE_HOST` accordingly):
+```
+#!/bin/bash
+printf "\\\'%q\\\' " "$@" | xargs ssh REMOTE_HOST curl -s
+```
+
 # Uptime indication (optional)
 
 You may have uptime indication on the webpage people use to request access.

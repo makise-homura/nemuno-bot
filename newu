@@ -8,6 +8,7 @@ c_servername=Localhost
 c_userhook_pkeyfile="/etc/ssh/ssh_host_rsa_key"
 c_userhook_hashtype="sha256"
 c_discord_curlparams=""
+c_curl_cmd="curl"
 
 # You may override these default values in /etc/newu.conf
 [ -f /etc/newu.conf ] && . /etc/newu.conf
@@ -72,7 +73,7 @@ echo -e "\e[1m==================================================================
 
 if [ "$c_discord_webhook" ]
 then
-    curl $c_discord_curlparams --data "{ \"content\": \"$c_servername: User $user is created. Connect to host $c_host, port $c_port.\" }" -H "Content-Type: application/json" -X POST $c_discord_webhook
+    $c_curl_cmd $c_discord_curlparams --data "{ \"content\": \"$c_servername: User $user is created. Connect to host $c_host, port $c_port.\" }" -H "Content-Type: application/json" -X POST $c_discord_webhook
 fi
 
 if [ "$c_userhook_url" ]
