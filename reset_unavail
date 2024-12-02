@@ -19,7 +19,14 @@ then
         fi
         echo "Reset server $1 at `/bin/date`" >> "$DIR/$1.log"
         [ -f "$DIR/https_proxy" ] && export https_proxy=`/bin/cat "$DIR/https_proxy"`
-        [ -f "$DIR/webhook" ] && /usr/bin/curl --data "{ \"content\": \"Notice: Server $1 was unavailable at `date`, performed cold reset.\" }" -H "Content-Type: application/json" -X POST `/bin/cat "$DIR/webhook"`
+        if [ -f "$DIR/webhook" ]
+        then
+            c_curl_cmd="/usr/bin/curl"
+            c_discord_curlparams=""
+            c_discord_webhook=`/bin/cat "$DIR/webhook"`
+            [ -f "$DIR/curl_settings" ] && . "$DIR/curl_settings"
+            $c_curl_cmd $c_discord_curlparams --data "{ \"content\": \"Notice: Server $1 was unavailable at `date`, performed cold reset.\" }" -H "Content-Type: application/json" -X POST $c_discord_webhook
+        fi
     else
         echo "Unable to reset server $1 at `/bin/date`: no BMC is known for it!" >> "$DIR/$1.log"
         exit 1

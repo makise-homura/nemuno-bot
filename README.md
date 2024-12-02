@@ -203,9 +203,12 @@ The following files are common for all servers:
 * `limit` (optional): limit in seconds, after which server is to be rebooted if unavailable for this amount of time. If doesn't exist, defaults to `3600` (an hour).
 * `https_proxy` (optional): HTTPS proxy to send webhook message. If doesn't exist, no proxy is used (unless explicitly specified in CRON script).
 * `webhook` (optional): Discord webhook to send notification message to (like "Notice: Server ... was unavailable at ..., performed cold reset.") if some server is rebooted due to unavailability. If doesn't exist, no message is sent.
+* `curl_settings` (optional): `c_curl_cmd` and `c_discord_curlparams` variables, if needed, as in `newu.conf` (see below).
 
 Each time `reset_unavail` is called by CRON for a server `hostname`, it appends a message (like "Server ... is alive at ..." if last check by `check_avail` succeeded, and "Reset server ... at ..." if it was unsuccessful for a specified time and rebooted) to a logfile `hostname.log`.
 Timestamp of a last check by `check_avail` is saved into `hostname.timestamp` file.
+
+If you're in Russia and have Discord unavailable, but still want to use it, you may do the same as noted above for `newu` script, but you should put `c_curl_cmd` and/or `c_discord_curlparams` variable definitions into `curl_settings` file at the pinger.
 
 # Bot (optional)
 
